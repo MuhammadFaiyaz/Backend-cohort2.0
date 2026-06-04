@@ -4,6 +4,7 @@ const noteModel = require("./models/notes.model");
 const app = express();
 
 app.use(express.json());
+
 app.post("/notes", async (req, res) => {
   const { title, description } = req.body;
 
@@ -17,5 +18,14 @@ app.post("/notes", async (req, res) => {
     note,
   });
 });
+
+app.get("/notes", async (req,res)=>{
+  const note = await noteModel.find()
+
+  res.status(200).json({
+    message: "Note fetched sucessfully",
+    note
+  })
+})
 
 module.exports = app;
