@@ -10,7 +10,7 @@ const App = () => {
   const [description, setDescription] = useState("")
 
   const fetchNotes = async () => {
-    axios.get("http://localhost:3000/api/notes")
+    axios.get("https://notes-api-backend-cohort2.onrender.com/api/notes")
       .then((res) => {
         setNotes(res.data.notes)
       })
@@ -23,7 +23,7 @@ const App = () => {
   const submitHandler = (e) => {
     e.preventDefault();
     const { title, description } = e.target.elements;
-    axios.post("http://localhost:3000/api/notes", {
+    axios.post("https://notes-api-backend-cohort2.onrender.com/api/notes", {
       title: title.value,
       description: description.value
     }).then((res) => {
@@ -33,7 +33,7 @@ const App = () => {
   }
 
   const deleteHandler = (noteId) => {
-    axios.delete("http://localhost:3000/api/notes/" + noteId)
+    axios.delete("https://notes-api-backend-cohort2.onrender.com/api/notes/" + noteId)
       .then(res => {
         console.log(res.data);
         fetchNotes()
@@ -43,7 +43,7 @@ const App = () => {
 
   const updateHandler = async () => {
     try {
-      await axios.patch(`http://localhost:3000/api/notes/${editId}`, {
+      await axios.patch(`https://notes-api-backend-cohort2.onrender.com/api/notes/${editId}`, {
         description
       });
       fetchNotes();
