@@ -18,7 +18,16 @@ const userSchema = new mongoose.Schema({
   bio: String,
   profileImage: {
     type: String,
-    default: "https://ik.imagekit.io/muhammadfaiyaz/download.png?updatedAt=1782100859135",
+    default:
+      "https://ik.imagekit.io/muhammadfaiyaz/download.png?updatedAt=1782100859135",
+  },
+  followers: {
+    ref: "users",
+    type: mongoose.Schema.Types.ObjectId,
+  },
+  followings: {
+    ref: "users",
+    type: mongoose.Schema.Types.ObjectId,
   },
 });
 
