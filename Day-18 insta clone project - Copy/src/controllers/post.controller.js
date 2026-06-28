@@ -2,7 +2,6 @@ const postModel = require("../models/post.model");
 const ImageKit = require("@imagekit/nodejs");
 const { toFile } = require("@imagekit/nodejs");
 
-
 const client = new ImageKit({
   privateKey: process.env["IMAGEKIT_PRIVATE_KEY"],
 });
