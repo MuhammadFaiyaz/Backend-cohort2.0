@@ -25,10 +25,7 @@ const registerController = async (req, res) => {
     profileImage,
   });
 
-  const token = jwt.sign(
-    { id: user._id, username: user.username },
-    process.env.JWT_SECRET_KEY
-  );
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY);
   res.cookie("token", token);
 
   res.status(201).json({
@@ -60,13 +57,9 @@ const loginController = async (req, res) => {
       message: "Inavlid user!",
     });
 
-  const token = jwt.sign(
-    { id: user._id, username: user.username },
-    process.env.JWT_SECRET_KEY,
-    {
-      expiresIn: "1d",
-    }
-  );
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
+    expiresIn: "1d",
+  });
   res.cookie("token", token);
   res.status(201).json({
     message: "User logged in successfully",
