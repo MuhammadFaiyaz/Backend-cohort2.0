@@ -57,7 +57,7 @@ const loginController = async (req, res) => {
       message: "Inavlid user!",
     });
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
+  const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET_KEY, {
     expiresIn: "1d",
   });
   res.cookie("token", token);

@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
+import axios from "axios"
 
 
 const Register = () => {
@@ -10,7 +11,11 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    
+    await axios.post("http://localhost:3000/api/auth/register", {
+      username,
+      email,
+      password
+    }, {withCredentials: true})
   }
 
 
