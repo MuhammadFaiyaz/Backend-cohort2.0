@@ -42,7 +42,7 @@ const Register = () => {
           <input
             type="email"
             onInput={(e) => setEmail(e.target.value)}
-            name="email"
+            name="username"
             value={email}
             placeholder="Enter email"
           />

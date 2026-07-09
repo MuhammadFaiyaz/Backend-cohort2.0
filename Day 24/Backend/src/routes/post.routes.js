@@ -6,7 +6,6 @@ const {
   createPostController,
   getPostController,
   getPostDeatailsController,
-  likePostController, getFeedController
 } = require("../controllers/post.controller");
 const identifyUser = require("../middlewares/auth.middleware");
 
@@ -18,7 +17,5 @@ postRouter.post(
 );
 postRouter.get("/", identifyUser, getPostController);
 postRouter.get("/details/:id", identifyUser, getPostDeatailsController);
-postRouter.post("/like/:postId", identifyUser, likePostController);
-postRouter.get("/feed", identifyUser, getFeedController);
 
 module.exports = postRouter;
