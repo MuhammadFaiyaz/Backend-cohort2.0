@@ -4,6 +4,7 @@ const app = express();
 const cookieParser = require("cookie-parser");
 const postRouter = require("./routes/post.routes");
 const userRouter = require("./routes/user.routes");
+const followRouter = require("./routes/follow.routes");
 const cors = require("cors");
 
 app.use(express.json());
@@ -13,6 +14,7 @@ app.use(cors({credentials: true, origin: "http://localhost:5173"}));
 app.use("/api/auth", authRouter)
 app.use("/api/posts", postRouter)
 app.use("/api/users", userRouter)
+app.use("/api/follows", followRouter)
 
 
 module.exports = app;

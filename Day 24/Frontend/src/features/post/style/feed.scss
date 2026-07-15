@@ -1,0 +1,171 @@
+$color-bg: #1d2030d2;
+$color-secondary-bg: #242739d2;
+$color-card-bg: #080e27;
+$color-border: #0c133b;
+$color-text-primary: #ffffff;
+$color-text-secondary: #8e8e8e;
+
+$font-family-base:
+  -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+  sans-serif;
+
+$avatar-size: 32px;
+$border-radius-base: 4px;
+$spacing-unit: 8px;
+
+$breakpoint-tablet: 768px;
+
+@mixin flex($direction: row, $align: center, $justify: flex-start) {
+  display: flex;
+  flex-direction: $direction;
+  align-items: $align;
+  justify-content: $justify;
+}
+
+main {
+  width: 100%;
+  @include flex(column, center, center);
+  background-color: $color-bg;
+  font-family: $font-family-base;
+  min-height: 100vh;
+
+  .feed-container {
+    @include flex(row, flex-start, center);
+    width: 100%;
+    max-width: 1100px;
+    gap: $spacing-unit * 4;
+
+    // --- Left panel: just the Sidebar box now ---
+    .left-panel {
+      flex-shrink: 0;
+      width: 260px;
+      border: 1px solid $color-border;
+      border-radius: $border-radius-base;
+      position: sticky;
+      top: $spacing-unit * 2;
+      padding: $spacing-unit * 2;
+    }
+
+    // --- Right side: wraps the posts feed ---
+    .feed-content {
+      width: 50%;
+      @include flex(column, center, flex-start);
+      background: $color-secondary-bg;
+
+      .posts {
+        @include flex(column, stretch, flex-start);
+        width: 100%;
+        max-width: 470px;
+        gap: $spacing-unit * 3;
+      }
+    }
+  }
+
+  .post {
+    background-color: $color-card-bg;
+    border: 1px solid $color-border;
+    border-radius: $border-radius-base + 4px;
+    overflow: hidden;
+
+    .user {
+      @include flex(row, center, flex-start);
+      padding: $spacing-unit * 1.5 $spacing-unit * 1.5;
+      gap: $spacing-unit;
+
+      .img-wrapper {
+        @include flex(row, center, center);
+        padding: 2px;
+        border-radius: 50%;
+        background: conic-gradient(from 45deg, #ac9c40, #a51866, #ac9c40);
+        img {
+          width: $avatar-size;
+          height: $avatar-size;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 1px solid $color-border;
+        }
+      }
+
+      p {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: $color-text-primary;
+      }
+    }
+
+    > img {
+      width: 100%;
+      height: 100%;
+      max-height: 600px;
+      object-fit: cover;
+      display: block;
+      border-radius: 7px;
+    }
+
+    .icons {
+      @include flex(row, center, space-between);
+      padding: $spacing-unit * 1.5;
+
+      .left,
+      .right {
+        @include flex(row, center, flex-start);
+        gap: $spacing-unit * 3;
+      }
+
+      button {
+        @include flex(row, center, center);
+        padding: 0;
+        background: none;
+        border: none;
+        color: $color-text-primary;
+        cursor: pointer;
+
+        .liked {
+          color: red;
+        }
+        svg {
+          width: 24px;
+          height: 24px;
+          display: block;
+        }
+
+        &:hover {
+          color: $color-text-secondary;
+        }
+      }
+    }
+
+    .bottom {
+      padding: $spacing-unit * 1.5;
+
+      .caption {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.4;
+        color: $color-text-primary;
+      }
+    }
+  }
+
+  @media (max-width: $breakpoint-tablet) {
+    .feed-container {
+      flex-direction: column;
+      padding: $spacing-unit;
+
+      .left-panel {
+        display: none;
+      }
+
+      .feed-content .posts {
+        max-width: 100%;
+      }
+    }
+
+    .post {
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+    }
+  }
+}

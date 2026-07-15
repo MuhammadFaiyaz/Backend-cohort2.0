@@ -14,12 +14,13 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, "password is required"],
+    select: false
   },
   bio: String,
   profileImage: {
     type: String,
     default:
-      "https://ik.imagekit.io/muhammadfaiyaz/download.png?updatedAt=1782100859135",
+      "https://ik.imagekit.io/muhammadfaiyaz/profile.webp?updatedAt=1783571915971",
   },
   followers: {
     ref: "users",
