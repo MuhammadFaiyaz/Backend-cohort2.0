@@ -1,0 +1,31 @@
+.user-list-section {
+  width: 100%;
+  margin-bottom: 24px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  h3 {
+    margin: 0 0 12px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #8e8e8e;
+    padding: 0 8px;
+  }
+
+  // Scrolls internally if a section has many users, instead of pushing the whole sidebar taller
+  max-height: 260px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #0c133b;
+    border-radius: 4px;
+  }
+}

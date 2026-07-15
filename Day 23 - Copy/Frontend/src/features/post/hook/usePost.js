@@ -9,7 +9,7 @@ export const usePost = () => {
     setLoading(true);
     try {
       const data = await getFeed();
-      setFeed(data.posts);
+      setFeed(data.posts.reverse());
     } catch (error) {
       console.log(error);
     } finally {

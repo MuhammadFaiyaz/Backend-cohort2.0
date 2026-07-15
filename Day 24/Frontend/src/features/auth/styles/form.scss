@@ -41,7 +41,6 @@
 main {
   min-height: 100vh;
   @include flex-center;
-  padding: 2rem;
   @include gradient-bg(#02071a, #0f1830);
   position: relative;
   overflow: hidden;
@@ -119,24 +118,7 @@ main {
         }
       }
 
-      .btn {
-        padding: 0.95rem;
-        border: none;
-        border-radius: 12px;
-        @include gradient-bg(#6366f1, #8b5cf6);
-        color: #fff;
-        @include font(1rem, 600);
-        cursor: pointer;
-        @include transition;
-        transform: scale(0.98);
-
-        .primary-btn {
-          @include gradient-bg(#6366f1, #8b5cf6);
-          &:hover {
-            filter: brightness(1.08);
-          }
-        }
-      }
+      
 
       a {
         @include font(0.95rem, 400);

@@ -1,0 +1,29 @@
+@mixin gradient-bg($from, $to, $deg: 135deg) {
+  background: linear-gradient($deg, $from, $to);
+}
+@mixin font($size, $weight) {
+  font-size: $size;
+  font-weight: $weight;
+}
+@mixin transition($value: all 0.25s ease) {
+  transition: $value;
+}
+
+.btn {
+        padding: 0.95rem;
+        border: none;
+        border-radius: 12px;
+        @include gradient-bg(#6366f1, #8b5cf6);
+        color: #fff;
+        @include font(1rem, 600);
+        cursor: pointer;
+        @include transition;
+        transform: scale(0.98);
+
+        .primary-btn {
+          @include gradient-bg(#6366f1, #8b5cf6);
+          &:hover {
+            filter: brightness(1.08);
+          }
+        }
+      }
