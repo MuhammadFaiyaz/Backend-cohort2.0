@@ -18,10 +18,10 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
-  {
-    rules: {
-      "no-unused-vars": "off",
-      "no-console": "off",
-    },
-  },
+  // {
+  //   rules: {
+  //     "no-unused-vars": "off",
+  //     "no-console": "off",
+  //   },
+  // },
 ]);
