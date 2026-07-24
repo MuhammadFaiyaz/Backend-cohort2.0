@@ -1,26 +1,18 @@
 const jwt = require("jsonwebtoken");
-const redis = require("../config/cache");
 
-async function authUser(req, res, next) {
+const authUser = (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const token = req.user.token;
+
     if (!token)
       return res.status(401).json({
         success: false,
         message: "Token not provided.",
       });
 
-    const isBlackListedToken = await redis.get(token);
-    if (isBlackListedToken) {
-      return res.status(401).json({
-        success: false,
-        message: "Token has been revoked.",
-      });
-    }
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-
     req.user = decoded;
+
     next();
   } catch (error) {
     return res.status(401).json({
@@ -28,6 +20,6 @@ async function authUser(req, res, next) {
       message: "Invalid or expired token.",
     });
   }
-}
+};
 
 module.exports = authUser;
