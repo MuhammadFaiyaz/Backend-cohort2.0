@@ -1,0 +1,213 @@
+// ─── Colors ──────────────────────────────────────────────────────
+
+$dark-bg: #0a0a0f;
+$dark-surface: #141420;
+$dark-border: #2a2a40;
+$dark-border-hover: #3a3a5a;
+
+$text-primary: #f0f0f5;
+$text-secondary: #d0d0e0;
+$text-muted: #8a8aa0;
+
+$color-primary: #6c5ce7;
+$color-primary-light: #a78bfa;
+$color-primary-gradient: linear-gradient(135deg, #6c5ce7, #a78bfa);
+
+$color-success: #34d399;
+$color-danger: #f87171;
+$color-warning: #fbbf24;
+
+// ─── Spacing ─────────────────────────────────────────────────────
+
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 1rem;
+$spacing-lg: 1.5rem;
+$spacing-xl: 2rem;
+
+// ─── Border Radius ──────────────────────────────────────────────
+
+$radius-sm: 6px;
+$radius-md: 10px;
+$radius-lg: 16px;
+
+// ─── Reset ──────────────────────────────────────────────────────
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: $text-primary;
+  background-color: $dark-bg;
+  -webkit-font-smoothing: antialiased;
+}
+
+// ─── Typography ──────────────────────────────────────────────────
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  color: $text-primary;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+
+p {
+  color: $text-secondary;
+  margin-bottom: $spacing-md;
+}
+
+a {
+  color: $color-primary-light;
+  text-decoration: none;
+  transition: color 0.2s;
+
+  &:hover {
+    color: $color-primary;
+    text-decoration: underline;
+  }
+}
+
+// ─── Scrollbar ────────────────────────────────────────────────────
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $dark-surface;
+  border-radius: $radius-lg;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $dark-border;
+  border-radius: $radius-lg;
+
+  &:hover {
+    background: $dark-border-hover;
+  }
+}
+
+// ─── Selection ────────────────────────────────────────────────────
+
+::selection {
+  background: $color-primary;
+  color: $text-primary;
+}
+
+// ─── Utility Classes ──────────────────────────────────────────────
+
+// Text
+.text-center { text-align: center; }
+.text-muted { color: $text-muted; }
+.text-gradient {
+  background: $color-primary-gradient;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// Flex
+.d-flex { display: flex; }
+.flex-column { flex-direction: column; }
+.justify-center { justify-content: center; }
+.align-center { align-items: center; }
+.gap-sm { gap: $spacing-sm; }
+.gap-md { gap: $spacing-md; }
+.gap-lg { gap: $spacing-lg; }
+
+// Spacing
+.mt-sm { margin-top: $spacing-sm; }
+.mt-md { margin-top: $spacing-md; }
+.mt-lg { margin-top: $spacing-lg; }
+
+.mb-sm { margin-bottom: $spacing-sm; }
+.mb-md { margin-bottom: $spacing-md; }
+.mb-lg { margin-bottom: $spacing-lg; }
+
+.p-sm { padding: $spacing-sm; }
+.p-md { padding: $spacing-md; }
+.p-lg { padding: $spacing-lg; }
+.p-xl { padding: $spacing-xl; }
+
+// Width
+.w-full { width: 100%; }
+.max-w-md { max-width: 448px; }
+.max-w-lg { max-width: 512px; }
+
+// Border Radius
+.rounded-sm { border-radius: $radius-sm; }
+.rounded-md { border-radius: $radius-md; }
+.rounded-lg { border-radius: $radius-lg; }
+
+// Background
+.bg-surface { background: $dark-surface; }
+.bg-gradient-primary {
+  background: $color-primary-gradient;
+}
+
+// ─── Container ────────────────────────────────────────────────────
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+}
+
+// ─── Card ─────────────────────────────────────────────────────────
+
+.card {
+  background: $dark-surface;
+  border: 1px solid $dark-border;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: $dark-border-hover;
+  }
+}
+
+// ─── Animations ───────────────────────────────────────────────────
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
