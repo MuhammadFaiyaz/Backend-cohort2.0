@@ -9,6 +9,8 @@ import { sendEmail } from "../services/mail.service.js";
  * @access Public
  * @body { username, email, password }
  */
+
+
 export async function register(req, res) {
 
     const { username, email, password } = req.body;
@@ -54,6 +56,38 @@ export async function register(req, res) {
         }
     });
 }
+
+
+/**
+ * @desc Verify user's email address
+ * @route GET /api/auth/verify-email
+ * @access Public
+ * @query { token }
+ */
+
+export async function verifyEmail(req,res) {
+    const {token} = req.query;
+    if(!token) return res.status(400).json({message: "Token is required", success: false, err: "Token missing"});
+
+    try{
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await userModel.findOne({email: decoded.email});
+        if(!user) return res.status(400).json({message: "User not found", success: false, err: "User not found"});
+
+        user.verified = true;
+        await user.save();
+
+        const html = `
+            <p>Hi ${user.username},</p>
+            <p>Your email has been successfully verified. You can now log in to your account.</p>
+            <p>Go to <a href="http://localhost:3000/api/auth/login">Login</a></p>
+        `;
+        return res.status(200).send(html);
+    } catch (err) {
+        return res.status(400).json({message: "Invalid token", success: false, err: err.message});
+    }
+}
+
 
 /**
  * @desc Login user and return JWT token
@@ -108,20 +142,8 @@ export async function login(req, res) {
     })
 }
 
-
-
-
-
-/**
- * @desc Verify user's email address
- * @route GET /api/auth/verify-email
- * @access Public
- * @query { token }
- */
-
-export async function verifyEmail(req,res) {
-    const {token} = req.query;
-    if(!token) return res.status(400).json({message: "Token is required", success: false, err: "Token missing"});
-
-    
+export async function getMe(req, res) {
+    const user = await userModel.findById(req.user.id).select("-password");
+    if(!user) return res.status(404).json({message: "User not found", success: false, err: "User not found"});
+    res.status(200).json({message: "User fetched successfully", success: true, user});
 }
