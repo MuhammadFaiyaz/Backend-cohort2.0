@@ -25,13 +25,5 @@ while (true) {
 
 
 }
-feat: initialize backend with user authentication and email verification
-
-- Added package.json for backend dependencies and scripts
-- Created server.js to set up Express server and connect to MongoDB
-- Implemented app.js to configure middleware and routes
-- Developed user authentication controller with register, login, and email verification functionalities
-- Added middleware for user  
-- Added AI service for testing Google Generative AI model
 
 rl.close()
