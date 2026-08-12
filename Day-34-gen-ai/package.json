@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx nodemon index.js"
+    "dev": "node index.js"
   },
   "keywords": [],
   "author": "",
@@ -14,8 +14,12 @@
   "dependencies": {
     "@langchain/google-genai": "^2.2.0",
     "@langchain/mistralai": "^1.2.0",
+    "@langchain/tavily": "^1.2.0",
     "dotenv": "^17.4.2",
     "langchain": "^1.5.5",
-    "readline-sync": "^1.4.10"
+    "nodemailer": "^9.0.5",
+    "readline-sync": "^1.4.10",
+    "tavily": "^2.0.0",
+    "zod": "^4.4.3"
   }
 }
