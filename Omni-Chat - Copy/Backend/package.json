@@ -29,6 +29,7 @@
     "nodemailer": "^9.0.5",
     "nodemon": "^3.1.14",
     "readline-sync": "^1.4.10",
+    "socket.io": "^4.8.3",
     "tavily": "^2.0.0",
     "zod": "^4.4.3"
   }
