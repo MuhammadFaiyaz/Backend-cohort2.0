@@ -8,7 +8,7 @@ export async function getChatHistory(req, res) {
 }
 
 export async function getChatMessages(req, res) {
-    const chat = await chatModel.findOne({
+    const chat = await chatModel.find({
         _id: req.params.chatId,
         user: req.user.id
     })
