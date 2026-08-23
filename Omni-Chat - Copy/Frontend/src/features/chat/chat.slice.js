@@ -51,5 +51,16 @@ const chatSlice = createSlice({
     }
 })
 
-export const { chats, activeChat, messages, loading, error, isTyping, socket, unreadCount } = chatSlice.actions
+export const {
+    setChats,
+    setActiveChat,
+    setMessages,
+    addMessage,
+    setLoading,
+    setError,
+    setTyping,
+    setSocket,
+    clearError,
+    updateMessageStatus,
+    removeTempMessage } = chatSlice.actions
 export default chatSlice.reducer;
