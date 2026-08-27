@@ -4,7 +4,7 @@ dotenv.config();
 
 const tavilyClient =  tavily({ apiKey: process.env.TAVILY_API_KEY });
 
-export async function searchWeb({ query, searchDepth = "basic", maxResults = 5 }) {
+export async function searchWeb({ query, searchDepth = "advanced", maxResults = 5 }) {
     try {
         const response = await tavilyClient.search(query, {
             searchDepth, maxResults, includeImages: false,

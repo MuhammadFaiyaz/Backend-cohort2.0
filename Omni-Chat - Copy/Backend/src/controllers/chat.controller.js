@@ -44,7 +44,7 @@ export async function sendMessage(req, res) {
 
         const response = await aiService.sendPrompt(conversation)
 
-        await messageModel.create([
+        const [userMsg, aiMsg] = await messageModel.create([
             {
                 chat: chat._id,
                 messageContent: trimmedMessage,
@@ -61,6 +61,8 @@ export async function sendMessage(req, res) {
             chatId: chat._id,
             title: chat.title,
             response: response.content,
+            userMessage: userMsg,
+            aiMessage: aiMsg
         });
     } catch (error) {
         console.error("Chat message error:", error);

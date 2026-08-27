@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useChat } from "../hooks/useChat";
-import { sendMessage } from "../service/chat.api";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const Dashboard = () => {
   const {
@@ -11,35 +12,122 @@ const Dashboard = () => {
     loading,
     error,
     isTyping,
+    sendMessage,
     loadChatMessages,
+    createChat,
+    removeChat,
   } = useChat();
+
+  const textRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  const iconItems = [
+    {
+      label: "Home",
+      icon: "M10.707 2.293a1 1 0 0 0-1.414 0l-7 7a1 1 0 0 0 1.414 1.414L4 10.414V17a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-3h2v3a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-6.586l.293.293a1 1 0 0 0 1.414-1.414l-7-7Z",
+    },
+    {
+      label: "Discover",
+      icon: "M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm3.536 4.464-1.415 4.243a1 1 0 0 1-.638.638l-4.243 1.415a.5.5 0 0 1-.633-.633l1.415-4.243a1 1 0 0 1 .638-.638l4.243-1.415a.5.5 0 0 1 .633.633Z",
+    },
+    {
+      label: "Library",
+      icon: "M3 3.5A1.5 1.5 0 0 1 4.5 2h3A1.5 1.5 0 0 1 9 3.5v13A1.5 1.5 0 0 1 7.5 18h-3A1.5 1.5 0 0 1 3 16.5v-13Zm8 0A1.5 1.5 0 0 1 12.5 2h3A1.5 1.5 0 0 1 17 3.5v13a1.5 1.5 0 0 1-1.5 1.5h-3a1.5 1.5 0 0 1-1.5-1.5v-13Z",
+    },
+    {
+      label: "Spaces",
+      icon: "M2 4.75A2.75 2.75 0 0 1 4.75 2h10.5A2.75 2.75 0 0 1 18 4.75v10.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25V4.75ZM6 6.5A1.5 1.5 0 0 1 7.5 5h5A1.5 1.5 0 0 1 14 6.5v7a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 6 13.5v-7Z",
+    },
+  ];
+
   const [inputMessage, setInputMessage] = useState("");
   const [selectedChatId, setSelectedChatId] = useState(null);
   const [sending, setSending] = useState(false);
+  const [activeIcon, setActiveIcon] = useState("Home");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [attachedFile, setAttachedFile] = useState(null);
 
   const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (selectedChatId) {
+    if (selectedChatId && selectedChatId !== activeChat?._id) {
       loadChatMessages(selectedChatId);
     }
-  }, [loadChatMessages, selectedChatId]);
+  }, [loadChatMessages, selectedChatId, activeChat]);
 
   async function handleSendMessage(e) {
     e.preventDefault();
 
-    if (sending || !inputMessage.trim() || !activeChat) return;
+    if (sending || !inputMessage.trim()) return;
     setSending(true);
 
     try {
-      await sendMessage({ message: inputMessage, chatId: activeChat._id });
-      setInputMessage("")
+      let chatId = activeChat?._id;
+      if (!chatId) {
+        const newChat = await createChat();
+        if (!newChat) {
+          console.log("Failed to create new chat");
+          return;
+        }
+        chatId = newChat._id;
+        setSelectedChatId(newChat._id);
+      }
+
+      setInputMessage("");
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      });
+      await sendMessage({ message: inputMessage, chatId });
+
+      if (textRef.current) {
+        textRef.current.style.height = "auto";
+      }
     } catch (error) {
-      console.error('Send error:', error);
-    } finally{
-      setSending(false)
+      console.error("Send error:", error);
+    } finally {
+      setSending(false);
     }
   }
+
+  async function handleNewChat() {
+    try {
+      const newChat = await createChat();
+      if (newChat) {
+        setSelectedChatId(newChat._id);
+      }
+    } catch (error) {
+      console.error("Create chat error:", error);
+    }
+  }
+
+  async function handleInputChange(e) {
+    setInputMessage(e.target.value);
+
+    const textArea = textRef.current;
+    textArea.style.height = "auto";
+    textArea.style.height = `${Math.min(textArea.scrollHeight, 160)}px`;
+  }
+
+  async function handleFileSelect(e) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAttachedFile(file);
+    }
+    e.target.value = "";
+  }
+
+  async function handleAttachClick() {
+    fileInputRef.current?.click();
+  }
+
+  async function removeAttachedFile() {
+    setAttachedFile(null);
+  }
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
     <div className="h-screen w-full flex bg-[#0A0A0F] text-neutral-200 overflow-hidden relative">
@@ -47,53 +135,44 @@ const Dashboard = () => {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(0,180,255,0.08),transparent)]" />
 
       {/* ============ ICON RAIL ============ */}
-      <nav className="hidden md:flex w-16 flex-col items-center py-4 gap-1 border-r border-white/5 bg-gradient-to-b from-[#0F0F1A] via-[#0A0A0F] to-[#0A0A0F] relative z-10 shrink-0">
+      <nav className="custom-scrollbar hidden md:flex w-16 flex-col items-center py-4 gap-1 border-r border-white/5 bg-gradient-to-b from-[#0F0F1A] via-[#0A0A0F] to-[#0A0A0F] relative z-10 shrink-0">
         <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#00D4FF] via-[#0088CC] to-[#004466] flex items-center justify-center shadow-[0_0_18px_rgba(0,180,255,0.4)] mb-4">
           <span className="text-white font-bold text-sm leading-none">O</span>
         </div>
 
-        {[
-          {
-            label: "Home",
-            active: true,
-            d: "M10.707 2.293a1 1 0 0 0-1.414 0l-7 7a1 1 0 0 0 1.414 1.414L4 10.414V17a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-3h2v3a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-6.586l.293.293a1 1 0 0 0 1.414-1.414l-7-7Z",
-          },
-          {
-            label: "Discover",
-            d: "M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm3.536 4.464-1.415 4.243a1 1 0 0 1-.638.638l-4.243 1.415a.5.5 0 0 1-.633-.633l1.415-4.243a1 1 0 0 1 .638-.638l4.243-1.415a.5.5 0 0 1 .633.633Z",
-          },
-          {
-            label: "Library",
-            d: "M3 3.5A1.5 1.5 0 0 1 4.5 2h3A1.5 1.5 0 0 1 9 3.5v13A1.5 1.5 0 0 1 7.5 18h-3A1.5 1.5 0 0 1 3 16.5v-13Zm8 0A1.5 1.5 0 0 1 12.5 2h3A1.5 1.5 0 0 1 17 3.5v13a1.5 1.5 0 0 1-1.5 1.5h-3a1.5 1.5 0 0 1-1.5-1.5v-13Z",
-          },
-          {
-            label: "Spaces",
-            d: "M2 4.75A2.75 2.75 0 0 1 4.75 2h10.5A2.75 2.75 0 0 1 18 4.75v10.5A2.75 2.75 0 0 1 15.25 18H4.75A2.75 2.75 0 0 1 2 15.25V4.75ZM6 6.5A1.5 1.5 0 0 1 7.5 5h5A1.5 1.5 0 0 1 14 6.5v7a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 6 13.5v-7Z",
-          },
-        ].map((item) => (
-          <button
-            key={item.label}
-            type="button"
-            title={item.label}
-            className={`group relative w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
-              item.active
-                ? "bg-gradient-to-br from-[#1A2A3A] to-[#0D1A2A] text-[#00D4FF] shadow-[inset_0_0_0_1px_rgba(0,180,255,0.3)]"
-                : "text-neutral-500 hover:text-neutral-200 hover:bg-white/[0.04]"
-            }`}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              className="w-5 h-5"
+        {iconItems.map((item) => {
+          const isActive = activeIcon === item.label;
+          return (
+            <button
+              key={item.label}
+              type="button"
+              title={item.label}
+              onClick={() => {
+                setActiveIcon(item.label);
+                if (item.label === "Home") {
+                  setIsSidebarOpen(!isSidebarOpen);
+                }
+              }}
+              className={`group relative w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
+                isActive
+                  ? "bg-gradient-to-br from-[#1A2A3A] to-[#0D1A2A] text-[#00D4FF] shadow-[inset_0_0_0_1px_rgba(0,180,255,0.3)]"
+                  : "text-neutral-500 hover:text-neutral-200 hover:bg-white/[0.04]"
+              }`}
             >
-              <path d={item.d} />
-            </svg>
-            {item.active && (
-              <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-[calc(100%+4px)] w-1 h-5 rounded-full bg-gradient-to-b from-[#00D4FF] to-[#0088CC]" />
-            )}
-          </button>
-        ))}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="w-5 h-5"
+              >
+                <path d={item.icon} />
+              </svg>
+              {isActive && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-[calc(100%+4px)] w-1 h-5 rounded-full bg-gradient-to-b from-[#00D4FF] to-[#0088CC]" />
+              )}
+            </button>
+          );
+        })}
 
         <div className="mt-auto">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#00D4FF] via-[#0088CC] to-[#004466] flex items-center justify-center text-white text-xs font-semibold ring-2 ring-white/5">
@@ -103,9 +182,21 @@ const Dashboard = () => {
       </nav>
 
       {/* ============ SIDEBAR ============ */}
-      <aside className="hidden lg:flex lg:w-72 xl:w-80 flex-col border-r border-white/5 bg-gradient-to-b from-[#2E3D1A] via-[#0A0A14] to-[#08080F] relative z-10">
+      <aside
+        className={`
+          flex flex-col border-r border-white/5 bg-gradient-to-b from-[#001433] via-[#0A0A14] to-[#08080F] relative z-10
+          transition-all duration-300 ease-in-out shrink-0
+          ${
+            isSidebarOpen
+              ? "w-72 xl:w-80 translate-x-0 opacity-100"
+              : "w-0 -translate-x-full opacity-0 overflow-hidden p-0 m-0"
+          }
+        `}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 h-16 border-b border-white/5 shrink-0">
+        <div
+          className={`flex items-center justify-between px-5 h-16 border-b border-white/5 shrink-0 ${isSidebarOpen ? "hidden" : ""}`}
+        >
           <span className="text-neutral-100 font-semibold text-base tracking-tight bg-gradient-to-r from-neutral-100 to-neutral-400 bg-clip-text text-transparent">
             Omni Chat
           </span>
@@ -115,9 +206,10 @@ const Dashboard = () => {
         </div>
 
         {/* New chat */}
-        <div className="p-3">
+        <div className={`p-3 ${!isSidebarOpen ? "hidden" : ""}`}>
           <button
             type="button"
+            onClick={handleNewChat}
             className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00D4FF] via-[#0088CC] to-[#005588] hover:brightness-110 active:brightness-95 text-white text-sm font-medium py-2.5 transition-all shadow-[0_4px_20px_rgba(0,180,255,0.35)] focus:outline-none focus:ring-2 focus:ring-[#0088CC]/50 focus:ring-offset-2 focus:ring-offset-[#0A0A0F]"
           >
             <svg
@@ -177,64 +269,50 @@ const Dashboard = () => {
             </p>
           ) : (
             chats.map((chat) => (
-              <button
-                key={chat._id}
-                onClick={() => setSelectedChatId(chat._id)}
-                className={`w-full flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-all ${
-                  selectedChatId === chat._id
+              <div
+              key={chat._id}
+                className={`group w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all ${
+                  activeChat?._id === chat._id
                     ? "bg-gradient-to-r from-[#0D1A2A] to-transparent ring-1 ring-[#004466] text-neutral-100"
-                    : "text-neutral-400 hover:bg-white/[0.04] hover:text-neutral-200"
+                    : "text-neutral-400 hover:bg-white/[0.07] hover:text-neutral-200"
                 }`}
               >
-                {chat.title || "New Chat"}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedChatId(chat._id)}
+                >
+                  {chat.title || "New Chat"}
+                </button>
+
+                {/* Delete button */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeChat(chat._id);
+                    if (activeChat?._id === chat._id) {
+                      setSelectedChatId(null);
+                    }
+                  }}
+                  className="opacity-0 group-hover:opacity-100 text-neutral-500 hover:text-red-400 transition-all shrink-0"
+                  aria-label="Delete chat"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className="w-4 h-4"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.808a2.75 2.75 0 0 0 2.741-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </div>
             ))
           )}
-          <a
-            href="#"
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm bg-gradient-to-r from-[#0D1A2A] to-transparent ring-1 ring-[#004466] text-neutral-100"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              className="w-4 h-4 text-[#00D4FF] shrink-0"
-            >
-              <path
-                fillRule="evenodd"
-                d="M2 4.25A2.25 2.25 0 0 1 4.25 2h11.5A2.25 2.25 0 0 1 18 4.25v8.5A2.25 2.25 0 0 1 15.75 15H9.06l-2.573 2.573A.75.75 0 0 1 5.25 17v-2H4.25A2.25 2.25 0 0 1 2 12.75v-8.5Z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span className="truncate">Redis caching strategies</span>
-          </a>
-
-          {[
-            "React state management tips",
-            "Docker vs Podman comparison",
-            "Weekly research summary",
-            "SQL query optimization",
-          ].map((title) => (
-            <a
-              key={title}
-              href="#"
-              className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-neutral-400 hover:bg-white/[0.04] hover:text-neutral-200 transition-colors"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                className="w-4 h-4 text-neutral-600 shrink-0"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M2 4.25A2.25 2.25 0 0 1 4.25 2h11.5A2.25 2.25 0 0 1 18 4.25v8.5A2.25 2.25 0 0 1 15.75 15H9.06l-2.573 2.573A.75.75 0 0 1 5.25 17v-2H4.25A2.25 2.25 0 0 1 2 12.75v-8.5Z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="truncate">{title}</span>
-            </a>
-          ))}
         </nav>
 
         {/* User footer */}
@@ -271,7 +349,7 @@ const Dashboard = () => {
       </aside>
 
       {/* ============ MAIN ============ */}
-      <div className="flex-1 flex flex-col min-w-0 relative z-10">
+      <div className="flex-1 flex flex-col min-w-0 relative z-10 custom-scrollbar">
         {/* Top bar */}
         <header className="h-16 shrink-0 flex items-center justify-between px-4 md:px-6 border-b border-white/5 bg-[#112030]/80 backdrop-blur-md">
           <div className="flex items-center gap-3">
@@ -348,9 +426,9 @@ const Dashboard = () => {
         </header>
 
         {/* Message thread */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-3xl mx-auto px-4 md:px-6 py-8 space-y-8">
-            {loading && activeChat ? (
+        <main className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="max-w-4xl mx-auto px-4 md:px-6 py-8 space-y-8">
+            {loading && activeChat && messages.length === 0 ? (
               <div className="space-y-4">
                 <div className="flex gap-3">
                   <div className="w-8 h-8 rounded-lg bg-neutral-800 animate-pulse"></div>
@@ -399,7 +477,7 @@ const Dashboard = () => {
                   ))}
                 </div>
               </div>
-            ) : messages.length === 0 ? (
+            ) : (messages?.length ?? 0) === 0 ? (
               // No messages in this chat
               <div className="flex flex-col items-center justify-center text-center py-16">
                 <p className="text-neutral-400">
@@ -420,7 +498,7 @@ const Dashboard = () => {
                     </div>
                   )}
                   <div
-                    className={`flex-1 min-w-0 ${msg.role === "user" ? "max-w-lg" : ""}`}
+                    className={`min-w-0 ${msg.role === "user" ? "max-w-lg flex flex-col items-end" : "flex-1"}`}
                   >
                     {msg.role === "ai" && (
                       <p className="text-sm font-medium text-neutral-300 mb-1">
@@ -434,30 +512,14 @@ const Dashboard = () => {
                           : "rounded-2xl rounded-tr-sm bg-gradient-to-br from-[#00D4FF] via-[#0088CC] to-[#005588] px-4 py-2.5 text-white shadow-[0_4px_20px_rgba(0,180,255,0.25)]"
                       }`}
                     >
-                      {msg.messageContent}
-                      {msg.status === "sending" && (
-                        <span className="inline-block ml-2 text-xs opacity-50">
-                          <svg
-                            className="animate-spin h-3 w-3 inline"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                          </svg>
-                        </span>
+                      {msg.role === "ai" ? (
+                        <div className="prose prose-invert prose-sm max-w-none">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {msg.messageContent}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        msg.messageContent
                       )}
                     </div>
                   </div>
@@ -471,116 +533,144 @@ const Dashboard = () => {
                 </div>
               ))
             )}
-
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00D4FF] to-[#004466] flex items-center justify-center shrink-0 shadow-[0_2px_12px_rgba(0,180,255,0.35)]">
-                <span className="text-white font-bold text-xs leading-none">
-                  O
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-neutral-300 mb-1">
-                  Omni
-                </p>
-                <div className="text-sm text-neutral-300 leading-relaxed rounded-2xl rounded-tl-sm bg-gradient-to-br from-white/[0.03] to-transparent ring-1 ring-white/5 px-4 py-3">
-                  I can help you research, write, debug code, and reason through
-                  problems. What are you working on today?
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3 justify-end">
-              <div className="max-w-lg rounded-2xl rounded-tr-sm bg-gradient-to-br from-[#00D4FF] via-[#0088CC] to-[#005588] px-4 py-2.5 text-sm text-white shadow-[0_4px_20px_rgba(0,180,255,0.25)]">
-                Can you compare Redis and Memcached for session storage?
-              </div>
-            </div>
+            <div ref={messagesEndRef} />
           </div>
         </main>
 
         {/* Composer */}
-        <div className="shrink-0 border-t border-white/5 bg-gradient-to-t from-[#0F0A0A] to-[#0A0A0F] px-4 md:px-6 py-4">
-          <div className="max-w-3xl mx-auto">
+        <div className="shrink-0 bg-[#0A0A0F] px-4 pb-4 pt-2">
+          <div className="max-w-2xl mx-auto">
             <form onSubmit={handleSendMessage}>
-              <div className="rounded-2xl p-[1px] bg-gradient-to-r from-[#0D1A2A] via-[#1A2A3A] to-[#0D1A2A] focus-within:from-[#0088CC] focus-within:via-[#00D4FF] focus-within:to-[#0088CC] transition-all duration-300">
-                <div className="flex items-end gap-2 rounded-2xl bg-[#0D0D14] px-3 py-2.5">
-                  <button
-                    type="button"
-                    className="shrink-0 p-1.5 rounded-md text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.05] transition-colors"
-                    aria-label="Attach file"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.243Z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-
-                  <textarea
-                    rows={1}
-                    value={inputMessage}
-                    onClick={() => (e) => setInputMessage(e.target.value)}
-                    placeholder={
-                      activeChat
-                        ? "Message Omni Chat…"
-                        : "Select a chat to start messaging"
-                    }
-                    disabled={!activeChat || sending}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage(e);
-                      }
-                    }}
-                    className="flex-1 resize-none bg-transparent text-sm text-neutral-100 placeholder-neutral-600 outline-none py-1.5 max-h-40"
-                  />
-
-                  <button
-                    type="submit"
-                    disabled={sending || !inputMessage.trim() || !activeChat}
-                    className="shrink-0 rounded-xl bg-gradient-to-br from-[#00D4FF] via-[#0088CC] to-[#005588] hover:brightness-110 active:brightness-95 disabled:opacity-40 disabled:cursor-not-allowed text-white p-2 transition-all shadow-[0_2px_16px_rgba(0,180,255,0.4)]"
-                    aria-label="Send message"
-                  >
-                    {sending ? ( // ← ✅ sending হলে spinner দেখান
-                      <svg
-                        className="animate-spin h-4 w-4"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                    ) : (
+              <div className="rounded-3xl border border-white/10 bg-[#141419] focus-within:border-white/20 transition-colors shadow-lg">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  accept="image/*,.pdf,.txt,.doc,.docx"
+                />
+                {attachedFile && (
+                  <div className="flex items-center gap-2 px-4 pt-3">
+                    <div className="flex items-center gap-2 bg-white/5 rounded-lg px-2.5 py-1.5 text-xs text-neutral-300">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
-                        className="w-4 h-4"
+                        className="w-3.5 h-3.5 text-neutral-500"
                       >
-                        <path d="M3.105 3.105a.75.75 0 0 1 .814-.163l13.5 5.25a.75.75 0 0 1 0 1.396l-13.5 5.25a.75.75 0 0 1-.99-.943L4.885 10 2.93 4.05a.75.75 0 0 1 .176-.945Z" />
+                        <path
+                          fillRule="evenodd"
+                          d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.243Z"
+                          clipRule="evenodd"
+                        />
                       </svg>
-                    )}
-                  </button>
-                </div>
+                      <span className="max-w-[160px] truncate">
+                        {attachedFile.name}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={removeAttachedFile}
+                        className="text-neutral-500 hover:text-neutral-200"
+                        aria-label="Remove attachment"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          className="w-3.5 h-3.5"
+                        >
+                          <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
+             
+              <textarea
+                ref={textRef}
+                rows={1}
+                value={inputMessage}
+                onChange={handleInputChange}
+                placeholder={
+                  activeChat
+                    ? "Message Omni Chat…"
+                    : "Select a chat to start messaging"
+                }
+                disabled={sending}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage(e);
+                  }
+                }}
+                className="w-full resize-none bg-transparent text-[15px] text-neutral-100 placeholder-neutral-500 outline-none px-4 pt-3.5 pb-1 max-h-40"
+              />
+              <div className="flex items-center justify-between px-2.5 pb-2.5 pt-1">
+                {/* ✅ Attach বাটন — এখন ক্লিক করলে ফাইল পিকার খুলবে */}
+                <button
+                  type="button"
+                  onClick={handleAttachClick}
+                  className="flex items-center justify-center w-8 h-8 rounded-full text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.06] transition-colors"
+                  aria-label="Attach file"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className="w-[18px] h-[18px]"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.243Z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={sending || !inputMessage.trim()}
+                  className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-black disabled:bg-white/10 disabled:text-neutral-600 disabled:cursor-not-allowed hover:bg-neutral-200 transition-colors"
+                  aria-label="Send message"
+                >
+                  {sending ? (
+                    <svg
+                      className="animate-spin h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      className="w-4 h-4"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 17a.75.75 0 0 1-.75-.75V5.612L5.29 9.77a.75.75 0 0 1-1.08-1.04l5.25-5.5a.75.75 0 0 1 1.08 0l5.25 5.5a.75.75 0 1 1-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0 1 10 17Z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                </button>
               </div>
+               </div>
             </form>
             <p className="text-center text-[11px] text-neutral-600 mt-2">
               Omni Chat can make mistakes. Verify important information.

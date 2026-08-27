@@ -3,7 +3,7 @@ import { sendMessage as sendMessageAPI, getChatHistory, getChatMessages, createN
 import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
-import { addMessage, removeTempMessage, setActiveChat, setError, setLoading, setMessages, setTyping } from "../chat.slice.js";
+import { addMessage, removeTempMessage, setActiveChat, setError, setLoading, setMessages, setChats, setTyping } from "../chat.slice.js";
 
 export function useChat() {
     const dispatch = useDispatch();
@@ -86,40 +86,37 @@ export function useChat() {
 
         try {
             // Optimistic update
+            const targetChatId = chatId || activeChat?._id;
+
             const tempId = `temp-${Date.now()}`;
             const tempMessage = {
                 tempId,
-                chat: chatId || activeChat?._id,
+                chat: targetChatId,
                 messageContent: message.trim(),
                 role: "user",
-                status: "pending",
-                createdAt: new Date.toString()
+                status: "sending",
+                createdAt: new Date().toISOString()
             }
             dispatch(addMessage(tempMessage))
 
             // Send to API
             const response = await sendMessageAPI({
-                chatId: chatId || activeChat?._id,
+                chatId: targetChatId,
                 message: message.trim()
             })
 
-            // Remove temp message
-            dispatch(removeTempMessage(tempId))
+            dispatch(removeTempMessage(tempId))  // Remove temp message
+            dispatch(addMessage(response.userMessage)) // Add user's msg
+            dispatch(addMessage(response.aiMessage))  // AI's response
 
-            // If new chat was created, update state
-            if (response.chatId && !chatId) {
+            dispatch(setActiveChat({ _id: response.chatId, title: response.title }))
+            if(!chatId || response.title !== activeChat._id){
                 await loadChatHistory()
-                dispatch(setActiveChat({ _id: response.chatId, title: response.title }))
             }
 
-            // Emit via socket for real-time
-            if (socketRef.current) {
-                socketRef.current.emit("send-message", {
-                    chatId: chatId || activeChat?._id,
-                    message: message.trim()
-                })
-            }
+            return response
         } catch (error) {
+            console.error("sendMessage error:", error);
             dispatch(setError(error.response?.data?.message || "Failed to send message"));
         }
     }, [dispatch, activeChat, loadChatHistory])
@@ -130,7 +127,7 @@ export function useChat() {
             dispatch(setLoading(true));
             const data = await createNewChat()
             dispatch(setActiveChat(data.chat))
-            dispatch(setMessages(null))
+            dispatch(setMessages([]))
             await loadChatHistory();
             return data.chat;
         } catch (error) {
