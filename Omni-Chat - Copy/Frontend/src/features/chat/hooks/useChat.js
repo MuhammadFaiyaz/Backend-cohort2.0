@@ -67,7 +67,6 @@ export function useChat() {
             dispatch(setActiveChat(data.chat))
             dispatch(setMessages(data.messages || []))
 
-            if (socketRef.current) socketRef.current.emit("join-chat", chatId)
 
         } catch (error) {
             dispatch(setError(error.response?.data?.message || "Failed to load messages"))
@@ -138,7 +137,7 @@ export function useChat() {
     }, [dispatch, loadChatHistory])
 
     // Delete chat
-    const removeChat = useCallback(async () => {
+    const removeChat = useCallback(async (chatId) => {
         try {
             dispatch(setLoading(true));
             await deleteChat(chatId);
@@ -148,6 +147,7 @@ export function useChat() {
                 dispatch(setMessages([]))
             }
         } catch (error) {
+            console.error("Delete chat error:", error);
             dispatch(setError(error.response?.data?.message || "Failed to delete chat"));
         } finally {
             dispatch(setLoading(false));

@@ -101,7 +101,7 @@ export async function getChatMessages(req, res) {
             });
         }
 
-        const messages = await messageModel.find({ chat: chat._id }).sort({ createdAt: -1 });
+        const messages = await messageModel.find({ chat: chat._id }).sort({ createdAt: 1 });
 
         return res.status(200).json({
             success: true,

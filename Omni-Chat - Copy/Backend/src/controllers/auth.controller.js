@@ -73,15 +73,27 @@ export async function loginController(req, res) {
 
     const token = jwt.sign({ id: user._id, username: user.username, }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.cookie('token', token);
-    res.status(200).json({ message: "Login successful", success: true, user: {
+    res.status(200).json({
+        message: "Login successful", success: true, user: {
             id: user._id,
             username: user.username,
             email: user.email
-        } });
+        }
+    });
 }
 
 export async function getMeController(req, res) {
     const user = await userModel.findById(req.user.id).select("-password");
     if (!user) return res.status(404).json({ message: "User not found", success: false, err: "User not found" });
     res.status(200).json({ message: "User fetched successfully", success: true, user });
+}
+
+export async function logoutController(req, res) {
+    try {
+        res.clearCookie("token")
+        res.status(200).json({ message: "Logged out successfully" });
+    } catch (error) {
+        console.error("Logout error:", error);
+        res.status(500).json({ message: "Failed to logout" });
+    }
 }

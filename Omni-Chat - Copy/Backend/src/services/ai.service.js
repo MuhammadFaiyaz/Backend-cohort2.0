@@ -1,5 +1,6 @@
 import { ChatMistralAI } from "@langchain/mistralai";
 import { createAgent } from "langchain";
+import { tools } from "../tools/index.js";
 import 'dotenv/config';
 
 class MistralService {
@@ -9,11 +10,16 @@ class MistralService {
       temperature: 0.3,
       apiKey: process.env.MISTRAL_API_KEY,
     })
+    this.agent = createAgent({
+      model: this.model,
+      tools,
+      systemPrompt: "Use the search_web tool for current information, news, websites, or social media. Cite the sources in your answer.",
+    })
   }
   async sendPrompt(prompt, options = {}) {
     try {
-      const response = await this.model.invoke(prompt, options);
-      return response;
+      const response = await this.agent.invoke({ messages: prompt }, options);
+      return response.messages[response.messages.length - 1];
     } catch (error) {
       console.error("Mistral query error:", error);
       throw error;

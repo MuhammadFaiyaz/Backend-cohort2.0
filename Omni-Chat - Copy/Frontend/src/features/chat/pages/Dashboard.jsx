@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { useChat } from "../hooks/useChat";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useNavigate, useParams } from "react-router";
 
 const Dashboard = () => {
   const {
@@ -17,6 +18,9 @@ const Dashboard = () => {
     createChat,
     removeChat,
   } = useChat();
+
+  const { chatId } = useParams();
+  const navigate = useNavigate();
 
   const textRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -42,7 +46,6 @@ const Dashboard = () => {
   ];
 
   const [inputMessage, setInputMessage] = useState("");
-  const [selectedChatId, setSelectedChatId] = useState(null);
   const [sending, setSending] = useState(false);
   const [activeIcon, setActiveIcon] = useState("Home");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -51,10 +54,10 @@ const Dashboard = () => {
   const { user } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (selectedChatId && selectedChatId !== activeChat?._id) {
-      loadChatMessages(selectedChatId);
+    if (chatId && chatId !== activeChat?._id) {
+      loadChatMessages(chatId);
     }
-  }, [loadChatMessages, selectedChatId, activeChat]);
+  }, [loadChatMessages, chatId, activeChat]);
 
   async function handleSendMessage(e) {
     e.preventDefault();
@@ -63,15 +66,15 @@ const Dashboard = () => {
     setSending(true);
 
     try {
-      let chatId = activeChat?._id;
-      if (!chatId) {
+      let currentChatId = activeChat?._id;
+      if (!currentChatId) {
         const newChat = await createChat();
         if (!newChat) {
           console.log("Failed to create new chat");
           return;
         }
-        chatId = newChat._id;
-        setSelectedChatId(newChat._id);
+        currentChatId = newChat._id;
+        navigate(`/chat/${newChat._id}`, { replace: true });
       }
 
       setInputMessage("");
@@ -94,7 +97,7 @@ const Dashboard = () => {
     try {
       const newChat = await createChat();
       if (newChat) {
-        setSelectedChatId(newChat._id);
+        navigate(`/chat/${newChat._id}`);
       }
     } catch (error) {
       console.error("Create chat error:", error);
@@ -270,19 +273,24 @@ const Dashboard = () => {
           ) : (
             chats.map((chat) => (
               <div
-              key={chat._id}
-                className={`group w-full flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all ${
-                  activeChat?._id === chat._id
+                role="button"
+                tabIndex={0}
+                key={chat._id}
+                onClick={() => navigate(`/chat/${chat._id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === "  ") {
+                    navigate(`/chat/${chat._id}`);
+                  }
+                }}
+                className={`group cursor-pointer w-full relative flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-all ${
+                  chatId === chat._id
                     ? "bg-gradient-to-r from-[#0D1A2A] to-transparent ring-1 ring-[#004466] text-neutral-100"
                     : "text-neutral-400 hover:bg-white/[0.07] hover:text-neutral-200"
                 }`}
               >
-                <button
-                  type="button"
-                  onClick={() => setSelectedChatId(chat._id)}
-                >
+                <span className="flex-1 text-left truncate">
                   {chat.title || "New Chat"}
-                </button>
+                </span>
 
                 {/* Delete button */}
                 <button
@@ -291,7 +299,7 @@ const Dashboard = () => {
                     e.stopPropagation();
                     removeChat(chat._id);
                     if (activeChat?._id === chat._id) {
-                      setSelectedChatId(null);
+                      navigate("/");
                     }
                   }}
                   className="opacity-0 group-hover:opacity-100 text-neutral-500 hover:text-red-400 transition-all shrink-0"
@@ -585,92 +593,92 @@ const Dashboard = () => {
                     </div>
                   </div>
                 )}
-             
-              <textarea
-                ref={textRef}
-                rows={1}
-                value={inputMessage}
-                onChange={handleInputChange}
-                placeholder={
-                  activeChat
-                    ? "Message Omni Chat…"
-                    : "Select a chat to start messaging"
-                }
-                disabled={sending}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage(e);
-                  }
-                }}
-                className="w-full resize-none bg-transparent text-[15px] text-neutral-100 placeholder-neutral-500 outline-none px-4 pt-3.5 pb-1 max-h-40"
-              />
-              <div className="flex items-center justify-between px-2.5 pb-2.5 pt-1">
-                {/* ✅ Attach বাটন — এখন ক্লিক করলে ফাইল পিকার খুলবে */}
-                <button
-                  type="button"
-                  onClick={handleAttachClick}
-                  className="flex items-center justify-center w-8 h-8 rounded-full text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.06] transition-colors"
-                  aria-label="Attach file"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className="w-[18px] h-[18px]"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.243Z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
 
-                <button
-                  type="submit"
-                  disabled={sending || !inputMessage.trim()}
-                  className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-black disabled:bg-white/10 disabled:text-neutral-600 disabled:cursor-not-allowed hover:bg-neutral-200 transition-colors"
-                  aria-label="Send message"
-                >
-                  {sending ? (
-                    <svg
-                      className="animate-spin h-4 w-4"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                  ) : (
+                <textarea
+                  ref={textRef}
+                  rows={1}
+                  value={inputMessage}
+                  onChange={handleInputChange}
+                  placeholder={
+                    activeChat
+                      ? "Message Omni Chat…"
+                      : "Select a chat to start messaging"
+                  }
+                  disabled={sending}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage(e);
+                    }
+                  }}
+                  className="w-full resize-none bg-transparent text-[15px] text-neutral-100 placeholder-neutral-500 outline-none px-4 pt-3.5 pb-1 max-h-40"
+                />
+                <div className="flex items-center justify-between px-2.5 pb-2.5 pt-1">
+                  {/* ✅ Attach বাটন — এখন ক্লিক করলে ফাইল পিকার খুলবে */}
+                  <button
+                    type="button"
+                    onClick={handleAttachClick}
+                    className="flex items-center justify-center w-8 h-8 rounded-full text-neutral-500 hover:text-neutral-300 hover:bg-white/[0.06] transition-colors"
+                    aria-label="Attach file"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
                       fill="currentColor"
-                      className="w-4 h-4"
+                      className="w-[18px] h-[18px]"
                     >
                       <path
                         fillRule="evenodd"
-                        d="M10 17a.75.75 0 0 1-.75-.75V5.612L5.29 9.77a.75.75 0 0 1-1.08-1.04l5.25-5.5a.75.75 0 0 1 1.08 0l5.25 5.5a.75.75 0 1 1-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0 1 10 17Z"
+                        d="M15.621 4.379a3 3 0 0 0-4.242 0l-7 7a3 3 0 0 0 4.241 4.243h.001l.497-.5a.75.75 0 0 1 1.064 1.057l-.498.501-.002.002a4.5 4.5 0 0 1-6.364-6.364l7-7a4.5 4.5 0 0 1 6.368 6.36l-3.455 3.553A2.625 2.625 0 1 1 9.52 9.52l3.45-3.451a.75.75 0 1 1 1.061 1.06l-3.45 3.451a1.125 1.125 0 0 0 1.587 1.595l3.454-3.553a3 3 0 0 0 0-4.243Z"
                         clipRule="evenodd"
                       />
                     </svg>
-                  )}
-                </button>
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={sending || !inputMessage.trim()}
+                    className="flex items-center justify-center w-8 h-8 rounded-full bg-white text-black disabled:bg-white/10 disabled:text-neutral-600 disabled:cursor-not-allowed hover:bg-neutral-200 transition-colors"
+                    aria-label="Send message"
+                  >
+                    {sending ? (
+                      <svg
+                        className="animate-spin h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="w-4 h-4"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 17a.75.75 0 0 1-.75-.75V5.612L5.29 9.77a.75.75 0 0 1-1.08-1.04l5.25-5.5a.75.75 0 0 1 1.08 0l5.25 5.5a.75.75 0 1 1-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0 1 10 17Z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
-               </div>
             </form>
             <p className="text-center text-[11px] text-neutral-600 mt-2">
               Omni Chat can make mistakes. Verify important information.

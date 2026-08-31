@@ -14,6 +14,14 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: "/chat/:chatId",
+    element: (
+      <Protected>
+        <Dashboard />
+      </Protected>
+    )
+  },
+  {
     path: "/dashboard",
     element: <Navigate to="/" replace />,
   },
