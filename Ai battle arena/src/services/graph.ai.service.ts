@@ -1,12 +1,15 @@
 import { HumanMessage } from "@langchain/core/messages";
-import { StateSchema, MessagesValue, ReducedValue, type GraphNode, StateGraph, START, END } from "@langchain/langgraph";
-
+import { StateSchema, MessagesValue, ReducedValue, StateGraph, START, END } from "@langchain/langgraph";
+import type { GraphNode } from "@langchain/langgraph";
 const State = new StateSchema({
     messages: MessagesValue
 })
 
 const solutionNode: GraphNode<typeof State> = (state: typeof State) => {
-    console.log(state.messages);
+    console.log(state);
+    return{
+      messages: state.messages[0]  
+    } 
 }
 
 const graph = new StateGraph(State).addNode("solution", solutionNode).addEdge(START, "solution").compile()

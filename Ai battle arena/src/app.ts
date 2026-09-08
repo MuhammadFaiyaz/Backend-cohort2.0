@@ -6,7 +6,7 @@ app.get("/health", (req, res) => {
     res.status(200).json({ status: "ok" })
 })
 
-app.post("use-graph", async (req, res) => {
+app.post("/use-graph", async (req, res) => {
     await useGraph("What is the capital of France?")
 })
 
