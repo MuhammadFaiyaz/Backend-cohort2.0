@@ -1,4 +1,4 @@
-import { StateGraph, type GraphNode, StateSchema } from "@langchain/langgraph";
+import { StateGraph, type GraphNode, StateSchema, START, END, type CompiledStateGraph } from "@langchain/langgraph";
 import z from "zod";
 import { createAgent, HumanMessage, providerStrategy } from "langchain";
 import { model_1, model_2, geminiModel } from "./model.ai.js";
@@ -50,4 +50,25 @@ const judgeNode: GraphNode<typeof state> = async (state) => {
       Please evaluate the solution and porvide the scores and reasoning
       `)]
   })
+
+  const { solution_1_score, solution_2_score, solution_1_reasoning, solution_2_reasoning } = judgeResponse.structuredResponse
+
+  return {
+    judge: {
+      solution_1_score, solution_2_score, solution_1_reasoning, solution_2_reasoning
+    }
+  }
 };
+
+const graph = new StateGraph(state)
+  .addNode("solution", solutionNode)
+  .addNode("judge_node", judgeNode)
+  .addEdge(START, "solution")
+  .addEdge("solution", "judge_node")
+  .addEdge("judge_node", END)
+  .compile()
+
+export default async function (problem: string) {
+  const result = await graph.invoke({ problem })
+  return result
+}
