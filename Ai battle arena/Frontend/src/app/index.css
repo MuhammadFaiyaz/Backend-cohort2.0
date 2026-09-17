@@ -1,1 +1,145 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,300..400&family=Oswald:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
+
+/* ─────────────────────────────────────
+   Design Tokens  →  Tailwind utilities
+   bg-arena-base, text-arena-text, etc.
+
+   Palette: fight-card arena. Corner A
+   (ember) vs Corner B (cobalt), decided
+   by a brass-gold judge — not generic
+   SaaS blue/purple.
+───────────────────────────────────── */
+@theme {
+  --font-family-sans:    'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-family-display: 'Oswald', ui-sans-serif, system-ui, sans-serif;
+  --font-family-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  /* Surfaces */
+  --color-arena-base:       #0e0f11;
+  --color-arena-surface:    #15171a;
+  --color-arena-card:       #1a1d21;
+  --color-arena-card-hover: #202327;
+  --color-arena-input:      #1a1d21;
+  --color-arena-msg:        #1e2125;
+
+  /* Borders */
+  --color-arena-border:     #2b2f34;
+  --color-arena-border-dim: #1f2226;
+
+  /* Text */
+  --color-arena-text:    #f2f3f5;
+  --color-arena-dim:     #9a9ea6;
+  --color-arena-muted:   #565a61;
+
+  /* Corner A — Ember */
+  --color-model-a:        #e2542f;
+  --color-model-a-bg:     rgba(226,84,47,.10);
+  --color-model-a-ring:   rgba(226,84,47,.24);
+
+  /* Corner B — Cobalt */
+  --color-model-b:        #2f7de2;
+  --color-model-b-bg:     rgba(47,125,226,.10);
+  --color-model-b-ring:   rgba(47,125,226,.24);
+
+  /* Judge — Brass */
+  --color-judge:          #e2a52f;
+  --color-judge-bg:       rgba(226,165,47,.08);
+  --color-judge-ring:     rgba(226,165,47,.24);
+
+  --color-winner-a: #e2542f;
+  --color-winner-b: #2f7de2;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: #2b2f34; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3f46; }
+
+/* ── Shimmer skeleton ── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-arena-card) 25%,
+    var(--color-arena-card-hover) 50%,
+    var(--color-arena-card) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+/* ── Typing indicator ── */
+@keyframes bounce-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: .35; }
+  30%            { transform: translateY(-5px); opacity: 1; }
+}
+.typing-dot                     { animation: bounce-dot 1.2s ease-in-out infinite; }
+.typing-dot:nth-child(2)        { animation-delay: .15s; }
+.typing-dot:nth-child(3)        { animation-delay: .30s; }
+
+/* ── Thread entrance ── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up .35s ease forwards; }
+
+/* ── Judge glow pulse ── */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(226,165,47,0); }
+  50%       { box-shadow: 0 0 24px rgba(226,165,47,.08); }
+}
+.animate-judge-glow { animation: glow-pulse 3.5s ease-in-out infinite; }
+
+/* ── VS badge pop-in ── */
+@keyframes vs-pop {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(.7); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+.animate-vs-pop { animation: vs-pop .3s cubic-bezier(.34,1.56,.64,1) .15s both; }
+
+/* ── Markdown prose inside AI cards ── */
+.prose-arena { font-size: 13.5px; line-height: 1.75; color: var(--color-arena-dim); }
+.prose-arena h1,.prose-arena h2,.prose-arena h3,.prose-arena h4 {
+  font-weight: 600; color: var(--color-arena-text);
+  margin: 1.1em 0 .5em; line-height: 1.35;
+}
+.prose-arena h3 { font-size: 13px; }
+.prose-arena p  { margin: .55em 0; }
+.prose-arena ul,.prose-arena ol { padding-left: 1.35em; margin: .55em 0; }
+.prose-arena li { margin: .25em 0; }
+.prose-arena strong { color: var(--color-arena-text); font-weight: 600; }
+.prose-arena em { font-style: italic; }
+.prose-arena blockquote {
+  border-left: 3px solid var(--color-arena-border);
+  padding-left: .85em; color: var(--color-arena-muted); margin: .75em 0;
+}
+.prose-arena code:not(pre code) {
+  font-family: var(--font-family-mono);
+  font-size: .78em;
+  background: rgba(255,255,255,.065);
+  border: 1px solid var(--color-arena-border-dim);
+  border-radius: 4px;
+  padding: .1em .4em;
+  color: #e2b97e;
+}
+.prose-arena a { color: var(--color-model-a); text-decoration: underline; }
+
+/* react-syntax-highlighter overrides */
+.prose-arena pre { margin: .85em 0; border-radius: 8px; overflow: hidden; }
+.prose-arena pre > div {
+  border-radius: 8px !important;
+  margin: 0 !important;
+  border: 1px solid var(--color-arena-border-dim) !important;
+}
+.code-lang-badge {
+  font-family: var(--font-family-mono);
+  font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--color-arena-muted); user-select: none;
+}
