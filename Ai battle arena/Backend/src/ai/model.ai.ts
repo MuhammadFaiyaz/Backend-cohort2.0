@@ -1,10 +1,11 @@
 import { ChatGoogle } from "@langchain/google";
 import { ChatCohere } from "@langchain/cohere";
+import {ChatGroq} from "@langchain/groq";
 import config from "../config/config.js"
 
-export const geminiModel = new ChatGoogle({
-  model: "gemini-3.6-flash",
-  apiKey: config.GOOGLE_API_KEY
+export const geminiModel = new ChatGroq({
+  model: "openai/gpt-oss-120b", //"gemini-3.6-flash",
+  apiKey: config.GROQ_API_KEY
 })
 
 export const model_1 = new ChatGoogle({
