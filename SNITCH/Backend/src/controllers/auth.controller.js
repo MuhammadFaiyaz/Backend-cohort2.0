@@ -19,13 +19,13 @@ const sendTokenResponse = async (user, res, message) => {
       fullName: user.fullName,
       email: user.email,
       contactNumber: user.contactNumber,
-      role: user.role
+      role: user.role,
     }
   })
 }
 
 export const register = async (req, res) => {
-  const { email, password, contactNumber, fullName } = req.body;
+  const { email, password, contactNumber, fullName, isSeller } = req.body;
   try {
     const existingUser = await userModel.findOne(
       { $or: [{ email }, { contactNumber }] }
@@ -36,11 +36,12 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const user = new userModel.create({
+    const user = await userModel.create({
       email,
       password,
       contactNumber,
       fullName,
+      role: isSeller ? "seller" : "buyer"
     });
 
    await sendTokenResponse(user, res, "User registered successfully");
