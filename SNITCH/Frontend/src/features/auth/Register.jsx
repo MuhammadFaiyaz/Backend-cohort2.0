@@ -170,7 +170,7 @@ export default function Register() {
             label="Full Name"
             type="text"
             autoComplete="name"
-            placeholder="Jane Doe"
+            placeholder="Muhammad Faiyaz"
             value={formData.fullName}
             onChange={handleChange}
             error={errors.fullName}
