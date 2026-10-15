@@ -3,7 +3,6 @@ import { useNavigate } from "react-router";
 import { useAuth } from "./hook/useAuth";
 import { useSelector } from "react-redux";
 
-
 const initialValues = {
   fullName: "",
   email: "",
@@ -28,7 +27,7 @@ function validate(values) {
   } else if (!EMAIL_REGEX.test(values.email.trim())) {
     errors.email = "Enter a valid email address.";
   }
-  
+
   const contactNumber = values.contactNumber.trim();
   if (!contactNumber) {
     errors.contactNumber = "Contact number is required.";
@@ -104,7 +103,7 @@ export default function Register() {
   const { handleRegister } = useAuth();
   const timerRef = useRef(null);
 
-  const isLoading = useSelector((state)=> state.authReducer.loading)
+  const isLoading = useSelector((state) => state.authReducer.loading);
 
   const [formData, setFormData] = useState(initialValues);
   const [errors, setErrors] = useState({});
@@ -144,8 +143,7 @@ export default function Register() {
       contactNumber: formData.contactNumber.trim(),
       isSeller: formData.isSeller,
     });
-
-    };
+  };
 
   const goToLogin = (e) => {
     e.preventDefault();
@@ -266,6 +264,26 @@ export default function Register() {
             {isLoading ? "Loading..." : "Register"}
           </button>
         </form>
+
+        {/* Divider */}
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-slate-200" />
+          <span className="text-sm text-slate-500">OR</span>
+          <div className="h-px flex-1 bg-slate-200" />
+        </div>
+
+        {/* Google Sign In */}
+        <a
+          href="/api/auth/google"
+          className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-400 hover:bg-slate-50 hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-600/20"
+        >
+          <img
+            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+            alt=""
+            className="h-5 w-5"
+          />
+          <span>Continue with Google</span>
+        </a>
 
         <p className="mt-6 text-center text-sm text-slate-600">
           Already have an account?{" "}
