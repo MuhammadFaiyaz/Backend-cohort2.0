@@ -44,8 +44,26 @@ export const register = async (req, res) => {
       role: isSeller ? "seller" : "buyer"
     });
 
-   await sendTokenResponse(user, res, "User registered successfully");
+    await sendTokenResponse(user, res, "User registered successfully");
 
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}
+
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await userModel.findOne({ email });
+
+    if (!user) return res.status(400).json({ message: "Incorrect email or password" });
+
+    const isMatchedPassword = await user.comparePassword(password);
+
+    if (!isMatchedPassword) return res.status(400).json({ message: "Incorrect email or password" });
+
+    await sendTokenResponse(user, res, "User logged in successfully");
+    
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
