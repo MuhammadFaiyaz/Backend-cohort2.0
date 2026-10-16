@@ -71,8 +71,28 @@ export const login = async (req, res) => {
 
 export const googleAuthCallback = async (req, res) => {
   try {
-    // Handle the Google authentication callback logic here
-    console.log("Google profile:", req.user);
+    const {id, displayName, emails, photos} = req.user;
+    const email = emails[0].value;
+    const porfilePic = photos[0].value;
+
+    let user = await userModel.findOne({ email });
+
+    if (!user) {
+      user = await userModel.create({
+        fullName: displayName,
+        email,
+        googleId: id,
+        role: 'buyer' 
+      })
+    }
+
+    const token = jwt.sign({
+      id: user._id,
+    }, config.JWT_SECRET, {
+      expiresIn: '7d'
+    });
+
+    res.cookie('token', token);
 
     res.redirect('http://localhost:5173/'); // Redirect to the home page or any other page after successful authentication
   } catch (error) {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "./hook/useAuth";
+import ContinueWithGoogle from "./components/ContinueWithGoogle";
 
 const initialValues = {
   email: "",
@@ -168,6 +169,16 @@ export default function Login() {
           </button>
         </form>
 
+        {/* Divider */}
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-slate-200" />
+          <span className="text-sm text-slate-500">OR</span>
+          <div className="h-px flex-1 bg-slate-200" />
+        </div>
+
+        {/* Continue with Google */}
+            <ContinueWithGoogle />
+            
         <p className="mt-6 text-center text-sm text-slate-600">
           Don&apos;t have an account?{" "}
           <a

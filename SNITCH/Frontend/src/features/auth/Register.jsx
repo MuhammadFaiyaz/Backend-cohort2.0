@@ -3,6 +3,8 @@ import { useNavigate } from "react-router";
 import { useAuth } from "./hook/useAuth";
 import { useSelector } from "react-redux";
 
+import ContinueWithGoogle from "./components/ContinueWithGoogle.jsx"
+
 const initialValues = {
   fullName: "",
   email: "",
@@ -273,18 +275,7 @@ export default function Register() {
         </div>
 
         {/* Google Sign In */}
-        <a
-          href="/api/auth/google"
-          className="flex w-full items-center justify-center gap-3 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-400 hover:bg-slate-50 hover:shadow-md active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-600/20"
-        >
-          <img
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt=""
-            className="h-5 w-5"
-          />
-          <span>Continue with Google</span>
-        </a>
-
+        <ContinueWithGoogle />
         <p className="mt-6 text-center text-sm text-slate-600">
           Already have an account?{" "}
           <a
