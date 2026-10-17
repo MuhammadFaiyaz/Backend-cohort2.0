@@ -5,6 +5,7 @@ import { config } from "../config/config.js";
 const sendTokenResponse = async (user, res, message) => {
   const token = jwt.sign({
     id: user._id,
+    role: user.role
   }, config.JWT_SECRET, {
     expiresIn: '7d'
   })
