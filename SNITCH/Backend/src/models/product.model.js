@@ -9,8 +9,7 @@ const productSchema = new mongoose.Schema({
     currency: { type: String, enum: ['USD', 'EUR', 'GBP', 'BDT', 'INR'], default: 'BDT'},
    },
    images: [{
-    url: { type: String },
-    alt: { type: String, default: 'Product image' }
+    url: { type: String, required: true },
    }]
 })
 
