@@ -1,17 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { useAuth } from "./hook/useAuth";
-import ContinueWithGoogle from "./components/ContinueWithGoogle";
+import { useAuth } from "../hook/useAuth.js";
+import { useSelector } from "react-redux";
+
+import ContinueWithGoogle from "../components/ContinueWithGoogle.jsx"
 
 const initialValues = {
+  fullName: "",
   email: "",
+  contactNumber: "",
   password: "",
+  confirmPassword: "",
+  isSeller: false,
 };
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const CONTACT_NUMBER_REGEX = /^\d{11}$/;
 
 function validate(values) {
   const errors = {};
+
+  if (!values.fullName.trim()) {
+    errors.fullName = "Full name is required.";
+  }
 
   if (!values.email.trim()) {
     errors.email = "Email is required.";
@@ -19,8 +30,23 @@ function validate(values) {
     errors.email = "Enter a valid email address.";
   }
 
+  const contactNumber = values.contactNumber.trim();
+  if (!contactNumber) {
+    errors.contactNumber = "Contact number is required.";
+  } else if (!CONTACT_NUMBER_REGEX.test(contactNumber)) {
+    errors.contactNumber = "Enter an 11-digit contact number.";
+  }
+
   if (!values.password) {
     errors.password = "Password is required.";
+  } else if (values.password.length < 6) {
+    errors.password = "Password must be at least 6 characters.";
+  }
+
+  if (!values.confirmPassword) {
+    errors.confirmPassword = "Please confirm your password.";
+  } else if (values.password !== values.confirmPassword) {
+    errors.confirmPassword = "Passwords do not match.";
   }
 
   return errors;
@@ -74,23 +100,28 @@ function ToggleButton({ shown, onClick, label }) {
   );
 }
 
-export default function Login() {
+export default function Register() {
   const navigate = useNavigate();
-  const { handleLogin } = useAuth();
+  const { handleRegister } = useAuth();
   const timerRef = useRef(null);
+
+  const isLoading = useSelector((state) => state.authReducer.loading);
 
   const [formData, setFormData] = useState(initialValues);
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // Clear the simulated-loading timer if the page unmounts.
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
 
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
 
     // Remove the error for a field as soon as the user edits it.
     if (errors[name]) {
@@ -107,15 +138,18 @@ export default function Login() {
 
     if (Object.keys(validationErrors).length > 0) return;
 
-    setIsLoading(true);
-
-    await handleLogin({ ...formData, email: formData.email.trim() });
-    navigate("/");
+    await handleRegister({
+      fullName: formData.fullName.trim(),
+      email: formData.email.trim(),
+      password: formData.password,
+      contactNumber: formData.contactNumber.trim(),
+      isSeller: formData.isSeller,
+    });
   };
 
-  const goToRegister = (e) => {
+  const goToLogin = (e) => {
     e.preventDefault();
-    navigate("/register");
+    navigate("/login");
   };
 
   return (
@@ -123,14 +157,25 @@ export default function Login() {
       <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl shadow-slate-900/5 ring-1 ring-slate-200 sm:p-8">
         <header className="mb-6 text-center">
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
-            Welcome Back
+            Create Account
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Log in to continue to your account.
+            Fill in your details to get started.
           </p>
         </header>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          <Field
+            id="fullName"
+            label="Full Name"
+            type="text"
+            autoComplete="name"
+            placeholder="Muhammad Faiyaz"
+            value={formData.fullName}
+            onChange={handleChange}
+            error={errors.fullName}
+          />
+
           <Field
             id="email"
             label="Email"
@@ -143,11 +188,24 @@ export default function Login() {
           />
 
           <Field
+            id="contactNumber"
+            label="Contact Number"
+            type="tel"
+            inputMode="numeric"
+            autoComplete="tel"
+            placeholder="12345678901"
+            maxLength={11}
+            value={formData.contactNumber}
+            onChange={handleChange}
+            error={errors.contactNumber}
+          />
+
+          <Field
             id="password"
             label="Password"
             type={showPassword ? "text" : "password"}
-            autoComplete="current-password"
-            placeholder="Enter your password"
+            autoComplete="new-password"
+            placeholder="At least 6 characters"
             value={formData.password}
             onChange={handleChange}
             error={errors.password}
@@ -160,12 +218,52 @@ export default function Login() {
             }
           />
 
+          <Field
+            id="confirmPassword"
+            label="Confirm Password"
+            type={showConfirm ? "text" : "password"}
+            autoComplete="new-password"
+            placeholder="Re-enter your password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            error={errors.confirmPassword}
+            trailing={
+              <ToggleButton
+                shown={showConfirm}
+                onClick={() => setShowConfirm((s) => !s)}
+                label="confirm password"
+              />
+            }
+          />
+
+          <label
+            htmlFor="isSeller"
+            className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-3.5 transition-colors hover:border-slate-300 has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50/50 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-indigo-600/15"
+          >
+            <input
+              id="isSeller"
+              name="isSeller"
+              type="checkbox"
+              checked={formData.isSeller}
+              onChange={handleChange}
+              className="mt-0.5 size-4 cursor-pointer rounded border-slate-300 accent-indigo-600 outline-none"
+            />
+            <span>
+              <span className="block text-sm font-medium text-slate-800">
+                I want to register as a seller
+              </span>
+              <span className="mt-0.5 block text-xs text-slate-500">
+                Optional. Leave unchecked to sign up as a regular user.
+              </span>
+            </span>
+          </label>
+
           <button
             type="submit"
             disabled={isLoading}
             className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-600/30 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:bg-indigo-600"
           >
-            {isLoading ? "Loading..." : "Login"}
+            {isLoading ? "Loading..." : "Register"}
           </button>
         </form>
 
@@ -176,17 +274,16 @@ export default function Login() {
           <div className="h-px flex-1 bg-slate-200" />
         </div>
 
-        {/* Continue with Google */}
-            <ContinueWithGoogle />
-            
+        {/* Google Sign In */}
+        <ContinueWithGoogle />
         <p className="mt-6 text-center text-sm text-slate-600">
-          Don&apos;t have an account?{" "}
+          Already have an account?{" "}
           <a
-            href="/register"
-            onClick={goToRegister}
+            href="/login"
+            onClick={goToLogin}
             className="font-medium text-indigo-600 transition-colors hover:text-indigo-700 hover:underline focus-visible:underline focus-visible:outline-none"
           >
-            Register
+            Login
           </a>
         </p>
       </div>
