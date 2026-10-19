@@ -18,7 +18,7 @@ const productsRouter = express.Router();
  * @desc Create a new product
  * @access Private (Seller only)
  */
-productsRouter.post("/", authenticateSeller, createProductValidator, upload.array("images", 7), createProduct)
+productsRouter.post("/", authenticateSeller, upload.array("images", 7), createProductValidator, createProduct)
 
 /**
  * @route GET /api/products/seller
