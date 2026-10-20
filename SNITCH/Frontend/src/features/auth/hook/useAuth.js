@@ -1,5 +1,5 @@
 import { setUser, setLoading, setError } from "../state/auth.slice";
-import { register } from "../services/auth.api";
+import { register, login } from "../services/auth.api";
 import { useDispatch } from "react-redux"
 
 export const useAuth = () => {
@@ -12,6 +12,7 @@ export const useAuth = () => {
       const data = await register({ fullName, email, password, contactNumber, isSeller })
       // localStorage.setItem("token", data.token)
       dispatch(setUser(data.user))
+      return data.user
     } catch (err) {
       const validationErrors = err.response?.data?.errors
       const message = validationErrors?.map(({ msg }) => msg).join(" ")
@@ -30,6 +31,7 @@ export const useAuth = () => {
       const data = await login({ email, password })
       // localStorage.setItem("token", data.token)
       dispatch(setUser(data.user))
+      return data.user
     } catch (err) {
       const validationErrors = err.response?.data?.errors
       const message = validationErrors?.map(({ msg }) => msg).join(" ")
@@ -41,5 +43,22 @@ export const useAuth = () => {
     }
   }
 
-  return { handleRegister, handleLogin }
+  const handleGetMe = async () => {
+    dispatch(setLoading(true))
+    dispatch(setError(null))
+    try {
+      const data = await getMe()
+      dispatch(setUser(data.user))
+    } catch (err) {
+      const validationErrors = err.response?.data?.errors
+      const message = validationErrors?.map(({ msg }) => msg).join(" ")
+        || err.response?.data?.message
+        || err.message
+      dispatch(setError(message))
+    } finally {
+      dispatch(setLoading(false))
+    }
+  }
+
+  return { handleRegister, handleLogin, handleGetMe }
 }

@@ -100,3 +100,21 @@ export const googleAuthCallback = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 }
+
+export const getMe = async (req, res) => {
+  try{
+    const user = req.user;
+    return res.status(200).json({ 
+      success: true,
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        contactNumber: user.contactNumber,
+        role: user.role,
+      }
+     });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+}

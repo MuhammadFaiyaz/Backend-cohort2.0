@@ -109,8 +109,8 @@ export default function Login() {
 
     setIsLoading(true);
 
-    await handleLogin({ ...formData, email: formData.email.trim() });
-    navigate("/");
+    const user = await handleLogin({ ...formData, email: formData.email.trim() });
+    navigate(user.role === "seller" ? "/seller/dashboard" : "/");
   };
 
   const goToRegister = (e) => {
