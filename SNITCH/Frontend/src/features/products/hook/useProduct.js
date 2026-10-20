@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 
-import { createProduct, getSellerProducts, getAllProducts } from "../services/product.api";
+import { createProduct, getSellerProducts, getAllProducts, getProductDetail } from "../services/product.api";
 import { setProducts, setAllProducts } from "../state/product.slice";
 
 export const useProduct = () => {
@@ -44,9 +44,22 @@ export const useProduct = () => {
     }
   }, [dispatch]);
 
+  const handleGetProductDetail = useCallback(async (productId) => {
+    try{
+      const data = await getProductDetail(productId);
+      const product = data?.product ?? null;
+      return product;
+    } catch (err) {
+      console.error("Error fetching product detail:", err);
+      throw err;
+    }
+  }, [dispatch]);
+
+
   return {
     handleCreateProduct,
     handleGetSellerProducts,
     handleGetAllProducts,
+    handleGetProductDetail
   };
 };

@@ -27,6 +27,7 @@ const ROUTES = {
   dashboard: "/dashboard",
   products: "/products",
   createProduct: "/seller/create-product",
+  sellerProductDetail: (id)=> `/seller/product/${id}`,
   productDetails: (id) => `/products/${id}`,
 };
 
@@ -407,7 +408,7 @@ function ProductCard({ product }) {
 
         <div className="mt-5 border-t border-neutral-100 pt-4">
           <Link
-            to={ROUTES.productDetails(product?._id)}
+            to={ROUTES.sellerProductDetail(product._id)}
             aria-label={`View details for ${title}`}
             className={`group/link inline-flex items-center gap-1.5 rounded text-sm font-medium text-neutral-900 transition-colors hover:text-neutral-600 ${focusRing}`}
           >
