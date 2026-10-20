@@ -110,6 +110,7 @@ export default function Login() {
     setIsLoading(true);
 
     const user = await handleLogin({ ...formData, email: formData.email.trim() });
+    console.log("Logged in user:", user);
     navigate(user.role === "seller" ? "/seller/dashboard" : "/");
   };
 

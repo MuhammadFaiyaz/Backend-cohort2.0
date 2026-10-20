@@ -145,6 +145,7 @@ export default function Register() {
       contactNumber: formData.contactNumber.trim(),
       isSeller: formData.isSeller,
     });
+    navigate("/login");
   };
 
   const goToLogin = (e) => {

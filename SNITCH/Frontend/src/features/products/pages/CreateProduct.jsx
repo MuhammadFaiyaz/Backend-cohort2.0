@@ -323,6 +323,7 @@ export default function CreateProduct() {
       });
 
       await handleCreateProduct(payload);
+      resetFormState();
 
       setSubmitStatus("success");
       setStatusMessage(

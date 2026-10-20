@@ -26,7 +26,7 @@ const ROUTES = {
   home: "/",
   dashboard: "/dashboard",
   products: "/products",
-  createProduct: "/products/create",
+  createProduct: "/seller/create-product",
   productDetails: (id) => `/products/${id}`,
 };
 
