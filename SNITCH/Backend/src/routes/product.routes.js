@@ -25,7 +25,12 @@ productsRouter.post("/", authenticateSeller, upload.array("images", 7), createPr
  * @desc Get all products
  * @access private (Seller only)
  */
-
 productsRouter.get("/seller", authenticateSeller, getSellerProducts)
 
+/**
+ * @route GET /api/products
+ * @desc Get all products
+ * @access Public
+ */
+productsRouter.get("/")
 export default productsRouter;
