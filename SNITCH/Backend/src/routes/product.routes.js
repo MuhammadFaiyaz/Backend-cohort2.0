@@ -1,7 +1,7 @@
 import express from "express";
 import { authenticateSeller } from "../middleware/auth.middleware.js";
 import Multer from "multer";
-import { createProduct, getSellerProducts, getAllProducts, getProductDetail } from "../controllers/product.controller.js";
+import { createProduct, getSellerProducts, getAllProducts, getProductDetail, addProductVariant, updateProductVariant } from "../controllers/product.controller.js";
 import { createProductValidator } from "../validator/product.validator.js";
 
 const upload = Multer({
@@ -41,4 +41,17 @@ productsRouter.get("/", getAllProducts)
  */
 productsRouter.get("/detail/:productId", getProductDetail)
 
+/**
+ * @route PATCH /api/products/:productId/variants
+ * @desc Create and edit variant for a specific product 
+ * @access Private
+ */
+productsRouter.post("/:productId/variants", authenticateSeller, upload.array("images", 7), addProductVariant)
+
+/**
+ * @route PATCH /api/products/:productId/variants/:variantId
+ * @desc Update an existing variant (stock for now)
+ * @access Private (Seller only)
+ */
+productsRouter.patch("/:productId/variants/:variantId", authenticateSeller, updateProductVariant);
 export default productsRouter;

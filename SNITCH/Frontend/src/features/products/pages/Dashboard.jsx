@@ -24,8 +24,7 @@ import { useProduct } from "../hook/useProduct";
 // Adjust these to match your router.
 const ROUTES = {
   home: "/",
-  dashboard: "/dashboard",
-  products: "/products",
+  dashboard: "/seller/dashboard",
   createProduct: "/seller/create-product",
   sellerProductDetail: (id)=> `/seller/product/${id}`,
   productDetails: (id) => `/products/${id}`,
@@ -33,7 +32,6 @@ const ROUTES = {
 
 const NAV_ITEMS = [
   { label: "Dashboard", to: ROUTES.dashboard },
-  { label: "Products", to: ROUTES.products },
   {label:"Home", to: ROUTES.home},
 ];
 

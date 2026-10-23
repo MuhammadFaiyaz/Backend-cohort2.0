@@ -1,7 +1,10 @@
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 
-import { createProduct, getSellerProducts, getAllProducts, getProductDetail } from "../services/product.api";
+import {
+  createProduct, getSellerProducts, getAllProducts, getProductDetail, addProductVariant,
+  updateProductVariant
+} from "../services/product.api";
 import { setProducts, setAllProducts } from "../state/product.slice";
 
 export const useProduct = () => {
@@ -45,7 +48,7 @@ export const useProduct = () => {
   }, [dispatch]);
 
   const handleGetProductDetail = useCallback(async (productId) => {
-    try{
+    try {
       const data = await getProductDetail(productId);
       const product = data?.product ?? null;
       return product;
@@ -53,13 +56,34 @@ export const useProduct = () => {
       console.error("Error fetching product detail:", err);
       throw err;
     }
-  }, [dispatch]);
+  }, []);
 
+  const handleCreateVariant = useCallback(async (productId, variantData) => {
+    try {
+      const data = await addProductVariant(productId, variantData);
+      return data.product;
+    } catch (err) {
+      console.error("Error creating variant:", err);
+      throw err;
+    }
+  }, []);
+
+  const handleUpdateVariantStock = useCallback(async (productId, variantId, stock) => {
+    try {
+      const data = await updateProductVariant(productId, variantId, { stock });
+      return data.product;
+    } catch (err) {
+      console.error("Error updating variant stock:", err);
+      throw err;
+    }
+  }, []);
 
   return {
     handleCreateProduct,
     handleGetSellerProducts,
     handleGetAllProducts,
-    handleGetProductDetail
+    handleGetProductDetail,
+    handleCreateVariant,
+    handleUpdateVariantStock
   };
 };
