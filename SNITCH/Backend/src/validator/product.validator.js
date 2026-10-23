@@ -1,13 +1,5 @@
-import {body, validationResult} from "express-validator";
-
-const validateRequest = (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    return res.status(400).json({errors: errors.array()});
-  }
-  next();
-}
+import {body} from "express-validator";
+import { validateRequest } from "../middleware/validate.middleware.js";
 
 export const createProductValidator = [
   body("title").notEmpty().withMessage("Title is required"),
