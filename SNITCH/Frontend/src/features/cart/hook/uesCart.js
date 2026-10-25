@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 
-import { getCart, addToCart } from "../service/cart.api.js";
+import { getCart, addToCart, updateCartItem, removeCartItem } from "../service/cart.api.js";
 import { setCart } from "../state/cart.slice.js";
 
 export const useCart = () => {
@@ -29,8 +29,38 @@ export const useCart = () => {
         throw err;
       }
     }, [dispatch]);
+
+  const handleUpdateCartItem = useCallback(
+    async (itemId, quantity) => {
+      try {
+        const data = await updateCartItem(itemId, quantity);
+        dispatch(setCart(data.cart));
+        return data.cart;
+      } catch (err) {
+        console.error("Error updating cart item:", err);
+        throw err;
+      }
+    },
+    [dispatch]
+  );
+
+  const handleRemoveCartItem = useCallback(
+    async (itemId) => {
+      try {
+        const data = await removeCartItem(itemId);
+        dispatch(setCart(data.cart));
+        return data.cart;
+      } catch (err) {
+        console.error("Error removing cart item:", err);
+        throw err;
+      }
+    },
+    [dispatch]
+  );
   return {
     handleGetCart,
     handleAddToCart,
+    handleUpdateCartItem,
+    handleRemoveCartItem
   };
 }

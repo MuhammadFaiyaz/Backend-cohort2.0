@@ -20,13 +20,13 @@ export const addToCart = async ({ productId, variantId, quantity = 1 }) => {
 };
 
 // PATCH /api/cart/items/:itemId   body: { quantity }
-// export const updateCartItem = async (itemId, quantity) => {
-//   const response = await cartApiInstance.patch(`/items/${itemId}`, { quantity });
-//   return response.data;
-// };
+export const updateCartItem = async (itemId, quantity) => {
+  const response = await cartApiInstance.patch(`/items/${itemId}`, { quantity });
+  return response.data;
+};
 
 // DELETE /api/cart/items/:itemId
-// export const removeCartItem = async (itemId) => {
-//   const response = await cartApiInstance.delete(`/items/${itemId}`);
-//   return response.data;
-// };
+export const removeCartItem = async (itemId) => {
+  const response = await cartApiInstance.delete(`/items/${itemId}`);
+  return response.data;
+};

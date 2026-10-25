@@ -1,8 +1,7 @@
 import { useSelector } from "react-redux";
 import { Navigate, useLocation } from "react-router";
 
-const Protected = ({children, role="buyer"}) => {
-
+const Protected = ({ children, role }) => {
   const location = useLocation();
 
   const user = useSelector((state) => state.authReducer.user);
@@ -10,11 +9,12 @@ const Protected = ({children, role="buyer"}) => {
 
   if (loading) return <div>Loading...</div>;
 
-  if (!user)
-    return <Navigate to="/login" replace state={{ from: location }} />;
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
 
-  if (user.role !== role) return <Navigate to="/" />;
-  return <div>{children}</div>;
+  const allowedRoles = role ? [].concat(role):null
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/" replace/>;
+  return children;
 };
 
 export default Protected;
