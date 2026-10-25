@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { priceSchema } from "./price.schema.js";
 
 // One line in the cart: "2 x this variant of this product"
 const cartItemSchema = new mongoose.Schema({
