@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useParams, useNavigate } from "react-router";
 import { useProduct } from "../hook/useProduct.js";
+import { useCart } from "../../cart/hook/uesCart.js";
 
 const LOW_STOCK_LIMIT = 5;
 
@@ -45,11 +46,15 @@ const findVariant = (variants, selected) =>
 const ProductDetail = () => {
   const { productId } = useParams();
   const { handleGetProductDetail } = useProduct();
+  const { handleAddToCart } = useCart();
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
   const [status, setStatus] = useState("loading"); // "loading" | "success" | "notFound" | "error"
   const [selectedIndex, setSelectedIndex] = useState(0); // which image is shown
   const [selected, setSelected] = useState({}); // chosen options, e.g. { size: "M", color: "black" }
+  const [adding, setAdding] = useState(false);
+  const [cartMessage, setCartMessage] = useState(null);
 
   useEffect(() => {
     // If productId changes before this request finishes, ignore the old response
@@ -89,6 +94,33 @@ const ProductDetail = () => {
   const selectOption = (name, value) => {
     setSelected((prev) => ({ ...prev, [name]: value }));
     setSelectedIndex(0); // the variant may have different images
+    setCartMessage(null);
+  };
+
+  const addToCartClick = async () => {
+    if (!selectedVariant || adding) return;
+
+    setAdding(true);
+    setCartMessage(null);
+
+    try {
+      await handleAddToCart({ productId, variantId: selectedVariant._id });
+      setCartMessage({ text: "Added to cart", isError: false });
+    } catch (err) {
+      if (err?.response?.status == 401) {
+        // Not logged in: send the user to the login page
+        navigate("/login");
+        return;
+      }
+      const data = err.response?.data;
+      setCartMessage({
+        text:
+          data?.message ?? data?.errors?.[0]?.msg ?? "Could not add to cart",
+        isError: true,
+      });
+    } finally {
+      setAdding(false);
+    }
   };
 
   /* ---- Values derived from the product + selection ---------------------- */
@@ -106,22 +138,35 @@ const ProductDetail = () => {
 
   // A variant can have its own price, otherwise it uses the product price
   const price =
-    selectedVariant?.price?.amount != null ? selectedVariant.price : product?.price;
+    selectedVariant?.price?.amount != null
+      ? selectedVariant.price
+      : product?.price;
 
   let stockMessage = null;
-  if (hasVariants) {
+  if (!hasVariants) {
+    stockMessage = {
+      text: "Not available for purchase yet.",
+      color: "text-neutral-500",
+    };
+  } else {
     if (!selectedVariant) {
-      stockMessage = { text: "This combination is not available.", color: "text-red-600" };
+      stockMessage = {
+        text: "This combination is not available.",
+        color: "text-red-600",
+      };
     } else if (selectedVariant.stock === 0) {
       stockMessage = { text: "Out of stock", color: "text-red-600" };
     } else if (selectedVariant.stock <= LOW_STOCK_LIMIT) {
-      stockMessage = { text: `Only ${selectedVariant.stock} left`, color: "text-amber-600" };
+      stockMessage = {
+        text: `Only ${selectedVariant.stock} left`,
+        color: "text-amber-600",
+      };
     } else {
       stockMessage = { text: "In stock", color: "text-green-600" };
     }
   }
 
-  const canBuy = !hasVariants || (selectedVariant && selectedVariant.stock > 0);
+  const canBuy = Boolean(selectedVariant && selectedVariant.stock > 0);
 
   return (
     <div className="min-h-screen bg-neutral-50 text-neutral-900">
@@ -210,7 +255,9 @@ const ProductDetail = () => {
               <h1 className="text-3xl font-semibold tracking-tight">
                 {product.title}
               </h1>
-              <p className="mt-3 text-2xl font-semibold">{formatPrice(price)}</p>
+              <p className="mt-3 text-2xl font-semibold">
+                {formatPrice(price)}
+              </p>
 
               {/* Variant options, one group per attribute (Size, Color, ...) */}
               {hasVariants && (
@@ -264,10 +311,11 @@ const ProductDetail = () => {
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <button
                   type="button"
-                  disabled={!canBuy}
+                  disabled={!canBuy || adding}
+                  onClick={addToCartClick}
                   className="h-12 flex-1 cursor-pointer border border-neutral-900 bg-white px-6 text-sm font-semibold text-neutral-900 transition-colors enabled:hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Add to Cart
+                  {adding ? "Adding..." : "Add to Cart"}{" "}
                 </button>
                 <button
                   type="button"
@@ -277,6 +325,17 @@ const ProductDetail = () => {
                   Buy Now
                 </button>
               </div>
+
+              {cartMessage && (
+                <p
+                  aria-live="polite"
+                  className={`mt-3 text-sm font-medium ${
+                    cartMessage.isError ? "text-red-600" : "text-green-600"
+                  }`}
+                >
+                  {cartMessage.text}
+                </p>
+              )}
 
               <h2 className="mt-10 text-sm font-semibold uppercase tracking-wide text-neutral-500">
                 Description

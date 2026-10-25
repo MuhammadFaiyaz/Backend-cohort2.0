@@ -17,7 +17,7 @@ export const getVariantInfo = async (productId, variantId) => {
 
   return {
     stock: variant.stock,
-    price: variant.price ?? product.price,
+    price: variant.price?.amount != null ? variant.price : product.price,
   };
 };
 

@@ -24,8 +24,8 @@ const formatCart = (cart) => {
     }
 
     // The real, current price (never trust the price saved in the cart)
-    const price = variant.price ?? product.price;
-
+    const price = variant.price?.amount != null ? variant.price : product.price;
+    
     return {
       _id: item._id,
       isAvailable: true,
@@ -95,7 +95,7 @@ export const addToCart = async (req, res) => {
     const variantInfo = await getVariantInfo(productId, variantId)
     if (!variantInfo) return res.status(404).json({ message: "Product or variant not found" });
 
-    const {stock, price: unitPrice} = variantInfo
+    const { stock, price: unitPrice } = variantInfo
 
     // Get the user's cart, or start a new one
     const cart =
