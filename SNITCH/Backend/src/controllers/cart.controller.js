@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import cartModel from "../models/cart.model.js";
-import productModel from "../models/product.model.js";
-import { getVariantInfo, stockOfVariant } from "../dao/product.dao.js";
+import { getVariantInfo } from "../dao/product.dao.js";
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                   */
