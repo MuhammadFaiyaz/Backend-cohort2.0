@@ -8,6 +8,7 @@ import authRouter from './routes/auth.routes.js';
 import productsRouter from './routes/product.routes.js';
 import {config} from './config/config.js';
 import cartRouter from './routes/cart.routes.js';
+import orderRouter from './routes/order.routes.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ passport.use(new GoogleStrategy({
 app.use('/api/auth', authRouter);
 app.use('/api/products', productsRouter)
 app.use('/api/cart', cartRouter)
+app.use('/api/orders', orderRouterRouter)
 
 app.use((err, _req, res, _next) => {
   console.error("💥", err);

@@ -13,6 +13,11 @@ const orderItemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, // the variant's _id inside the product
     required: true,
   },
+  seller: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
  
   title: { type: String, required: true },
   attributes: { type: Map, of: String },
@@ -65,6 +70,9 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true }
 );
 orderSchema.index({user:1,createdAt:-1})// Makes "my orders, newest first" fast
+orderSchema.index({ "items.seller": 1, createdAt: -1 }); // Makes "orders that contain my products" fast for sellers
+
+ 
 
 
 const orderModel = mongoose.model("Order", orderSchema);
