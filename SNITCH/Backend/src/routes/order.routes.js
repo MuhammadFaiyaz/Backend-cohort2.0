@@ -1,5 +1,5 @@
 import express from "express";
-import { authenticateUser } from "../middleware/auth.middleware.js";
+import { authenticateUser, authenticateSeller } from "../middleware/auth.middleware.js";
 import {
   createOrderValidator,
   orderIdValidator,
@@ -7,6 +7,7 @@ import {
 import {
   createOrder,
   getMyOrders,
+  getSellerOrders,
   getOrderDetail,
   payOrder,
 } from "../controllers/order.controller.js";
@@ -31,6 +32,17 @@ orderRouter.post("/", authenticateUser, createOrderValidator, createOrder);
  * @returns 200 { orders }
  */
 orderRouter.get("/", authenticateUser, getMyOrders);
+
+/**
+ * @route GET /api/orders/seller
+ * @description Lists paid orders that contain the logged-in SELLER's products.
+ *   Each order only includes that seller's own lines, plus the delivery details needed to ship.
+ * @access Private (Seller only)
+ * @returns 200 { orders }
+ * NOTE: this must stay ABOVE "/:orderId", otherwise "seller" would be read as an order id.
+ */
+orderRouter.get("/seller", authenticateSeller, getSellerOrders);
+ 
 
 /**
  * @route GET /api/orders/:orderId
