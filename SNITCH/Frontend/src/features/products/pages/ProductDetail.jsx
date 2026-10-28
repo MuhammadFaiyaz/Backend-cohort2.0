@@ -170,15 +170,7 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-neutral-50 text-neutral-900">
-      <header className="border-b border-neutral-200 bg-white">
-        <div className="mx-auto flex h-16 max-w-7xl items-center px-4 sm:px-8">
-          <Link to="/" className="text-lg font-bold tracking-[0.22em]">
-            SNITCH
-          </Link>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
+        <main className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
         <Link
           to="/"
           className="text-sm font-medium text-neutral-500 hover:text-neutral-900"
