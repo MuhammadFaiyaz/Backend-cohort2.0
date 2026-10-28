@@ -27,3 +27,43 @@ export const stockOfVariant = async (productId, variantId) => {
   const info = await getVariantInfo(productId, variantId);
   return info ? info.stock : null;
 };
+
+/*  Stock changes (used when an order is created, fails or is cancelled)      */
+const assertValidQuantity = (quantity) => {
+  if (!Number.isInteger(quantity) || quantity < 1) {
+    throw new Error("Quantity must be a whole number, 1 or more");
+  }
+};
+
+// Takes quantity units out of a variant's stock.
+// It is ONE atomic database operation: the stock is checked and reduced
+// together, so two buyers can never both take the last unit.
+export const reduceStock = async (productId, variantId, quantity) => {
+  assertValidQuantity(quantity);
+
+  const result = await productModel.updateOne(
+    {
+      _id: productId,
+      variants: {
+        $elemMatch: {
+          _id: variantId,
+          stock: { $gte: quantity }
+        }
+      },
+    },
+    { $inc: { "variants.$.stock": -quantity } }
+  );
+
+  return result.modifiedCount === 1;
+};
+
+export const restoreStock = async (productId, variantId, quantity) => {
+  assertValidQuantity(quantity);
+
+  const result = await productModel.updateOne(
+    { _id: productId, "variants._id": variantId },
+    { $inc: { "variants.$.stock": quantity } }
+  );
+
+  return result.modifiedCount === 1;
+};
