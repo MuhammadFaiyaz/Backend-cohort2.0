@@ -7,7 +7,7 @@ import {
   getOrderDetail,
   payOrder,
 } from "../services/order.api.js";
-import { useCart } from "../../cart/hook/useCart.js";
+import { useCart } from "../../cart/hook/uesCart.js";
 
 // Orders are only shown on their own pages, so there is no Redux slice:
 // each function returns its data and the page keeps it in useState.

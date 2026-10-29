@@ -9,6 +9,7 @@ import ProductDetail from "../features/products/pages/ProductDetail.jsx";
 import SellerProductDetail from "../features/products/pages/SellerProductDetail.jsx";
 import Cart from "../features/cart/pages/Cart.jsx";
 import MainLayout from "../layouts/MainLayout.jsx";
+import Checkout from "../features/orders/pages/Checkout.jsx";
 
 export const routes = createBrowserRouter([
   // Pages with the shared Navbar on top
@@ -22,6 +23,14 @@ export const routes = createBrowserRouter([
         element: (
           <Protected>
             <Cart />
+          </Protected>
+        ),
+      },
+      {
+        path: "/checkout",
+        element: (
+          <Protected>
+            <Checkout />
           </Protected>
         ),
       },

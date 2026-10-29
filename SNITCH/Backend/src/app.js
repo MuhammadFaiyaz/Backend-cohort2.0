@@ -38,7 +38,7 @@ passport.use(new GoogleStrategy({
 app.use('/api/auth', authRouter);
 app.use('/api/products', productsRouter)
 app.use('/api/cart', cartRouter)
-app.use('/api/orders', orderRouterRouter)
+app.use('/api/orders', orderRouter)
 
 app.use((err, _req, res, _next) => {
   console.error("💥", err);
